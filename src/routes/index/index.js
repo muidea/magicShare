@@ -2,10 +2,11 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'dva'
 import { Row, List, Col, Button } from 'antd'
+import MediaPanel from './mediaPanel'
 import styles from './index.less'
 
 function IndexPage({ index, dispatch }) {
-  const { summaryList, readOnly } = index
+  const { summaryList, readOnly, addNewFlag } = index
 
   const onSelect = (value) => {
     dispatch({ type: 'app/redirectContent', payload: { ...value } })
@@ -19,8 +20,16 @@ function IndexPage({ index, dispatch }) {
     dispatch({ type: 'app/redirectContent', payload: { ...value } })
   }
 
-  const onNew = (value) => {
-    dispatch({ type: 'app/redirectContent', payload: { ...value } })
+  const onNew = () => {
+    dispatch({ type: 'index/addNew' })
+  }
+
+  const onSubmit = (value) => {
+    dispatch({ type: 'index/submitNew', payload: { ...value } })
+  }
+
+  const onCancel = (value) => {
+    dispatch({ type: 'index/cancelNew', payload: { ...value } })
   }
 
   const TitleText = ({ item }) => (
@@ -48,9 +57,18 @@ function IndexPage({ index, dispatch }) {
   )
 
   const NewPanel = () => (
-    <Button type="dashed" style={{ width: '100%', marginBottom: 8 }} icon="plus" onClick={onNew} >
-      添加
-    </Button>
+    <div>
+      {
+        !addNewFlag &&
+        <Button type="dashed" style={{ width: '100%', marginBottom: 8 }} icon="plus" onClick={onNew} >
+        添加
+        </Button>
+      }
+      {
+        addNewFlag &&
+        <MediaPanel onSubmit={onSubmit} onCancel={onCancel} />
+      }
+    </div>
   )
 
   return (

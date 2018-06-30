@@ -89,7 +89,10 @@ export default {
       const { errorCode, reason } = data
 
       if (errorCode === 0) {
-        yield put({ type: 'clearSession', payload: { authToken: '', sessionID: '', onlineUser: null } })
+        yield put({ type: 'clearSession', payload: { authToken: '', sessionID: '', onlineUser: undefined } })
+        yield put(routerRedux.push({
+          pathname: '/',
+        }))
       } else {
         throw reason
       }

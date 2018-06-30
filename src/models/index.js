@@ -7,6 +7,8 @@ export default {
 
   state: {
     summaryList: [],
+    readOnly: true,
+    addNewFlag: false,
   },
 
   subscriptions: {
@@ -23,11 +25,31 @@ export default {
   },
 
   effects: {
-    *queryIndex({ payload }, { call, put }) {
+    *queryIndex({ payload }, { call, put, select }) {
+      const { onlineUser } = yield select(_ => _.app)
+
       const result = yield call(queryIndex, { ...payload })
       const { data } = result
       const { media } = data
-      yield put({ type: 'save', payload: { summaryList: media } })
+      yield put({ type: 'save', payload: { summaryList: media, readOnly: !onlineUser } })
+    },
+
+    *addNew({ payload }, { put, select }) {
+      const { onlineUser } = yield select(_ => _.app)
+      if (onlineUser) {
+        yield put({ type: 'save', payload: { addNewFlag: true } })
+      }
+    },
+
+    *submitNew({ payload }, { put, select }) {
+      const { onlineUser } = yield select(_ => _.app)
+      if (onlineUser) {
+        yield put({ type: 'save', payload: { addNewFlag: false } })
+      }
+    },
+
+    *cancelNew({ payload }, { put }) {
+      yield put({ type: 'save', payload: { addNewFlag: false } })
     },
   },
 
