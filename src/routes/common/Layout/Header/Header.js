@@ -24,9 +24,6 @@ function MaintainHeader({ history, user, logoutHandler }) {
           className={styles.menu}
           onClick={onMenuClick}
         >
-          <Menu.Item key="/">
-            <Link to="/"><Icon type="home" />Home</Link >
-          </Menu.Item>
           { !user &&
           <Menu.Item key="/login">
             <Link to="/login"><Icon type="tool" />Login</Link>
