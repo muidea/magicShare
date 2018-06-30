@@ -4,10 +4,10 @@ import PropTypes from 'prop-types'
 import { connect } from 'dva'
 import { Helmet } from 'react-helmet'
 import { withRouter } from 'dva/router'
-import { MainLayout, MaintainLayout } from './common'
+import { MainLayout } from './common'
 
 const App = ({ children, app, history, dispatch }) => {
-  const { isLogin, onlineUser, authToken, sessionID } = app
+  const { onlineUser, authToken, sessionID } = app
   const onLogoutHandler = () => {
     dispatch({ type: 'app/logoutUser', payload: { authToken, sessionID } })
   }
@@ -18,16 +18,9 @@ const App = ({ children, app, history, dispatch }) => {
         <title>MagicShare</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Helmet>
-      { !isLogin &&
-      <MainLayout history={history}>
+      <MainLayout history={history} user={onlineUser} logoutHandler={onLogoutHandler}>
         { children }
       </MainLayout>
-      }
-      { isLogin &&
-      <MaintainLayout history={history} user={onlineUser} logoutHandler={onLogoutHandler}>
-        { children }
-      </MaintainLayout>
-      }
     </div>
   )
 }

@@ -1,7 +1,5 @@
-import NormalHeader from './NormalHeader'
-import MaintainHeader from './MaintainHeader'
+import Header from './Header'
 
 export {
-  NormalHeader,
-  MaintainHeader,
+  Header,
 }

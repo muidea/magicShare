@@ -68,7 +68,7 @@ export default {
       if (errorCode === 0) {
         yield put({ type: 'saveSession', payload: { isLogin: errorCode === 0, authToken, sessionID, onlineUser } })
         yield put(routerRedux.push({
-          pathname: '/maintain',
+          pathname: '/',
         }))
       } else {
         throw reason
@@ -89,10 +89,7 @@ export default {
       const { errorCode, reason } = data
 
       if (errorCode === 0) {
-        yield put({ type: 'clearSession', payload: { authToken: '', sessionID: '', onlineUser: {} } })
-        yield put(routerRedux.push({
-          pathname: '/',
-        }))
+        yield put({ type: 'clearSession', payload: { authToken: '', sessionID: '', onlineUser: null } })
       } else {
         throw reason
       }

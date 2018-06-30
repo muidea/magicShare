@@ -1,14 +1,15 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import { Row, Col } from 'antd'
-import { NormalHeader } from './Header'
+import { Header } from './Header'
 import Footer from './Footer'
 import styles from './MainLayout.less'
 
-function MainLayout({ history, children }) {
+function MainLayout({ history, user, logoutHandler, children }) {
   return (
     <div>
       <div className={styles.header}>
-        <NormalHeader history={history} />
+        <Header history={history} user={user} logoutHandler={logoutHandler} />
       </div>
       <Row className={styles.content}>
         <Col span={16} offset={4}>
@@ -19,5 +20,13 @@ function MainLayout({ history, children }) {
     </div>
   )
 }
+
+MainLayout.propTypes = {
+  history: PropTypes.object,
+  user: PropTypes.object,
+  logoutHandler: PropTypes.func,
+  children: PropTypes.object,
+}
+
 
 export default MainLayout

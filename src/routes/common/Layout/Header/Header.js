@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Menu, Icon, Row } from 'antd'
 import { Link } from 'dva/router'
-import styles from './index.less'
+import styles from './Header.less'
 
 const { SubMenu } = Menu
 
@@ -27,18 +27,12 @@ function MaintainHeader({ history, user, logoutHandler }) {
           <Menu.Item key="/">
             <Link to="/"><Icon type="home" />Home</Link >
           </Menu.Item>
-          <Menu.Item key="/catalog">
-            <Link to="/catalog"><Icon type="appstore-o" />Post</Link>
+          { !user &&
+          <Menu.Item key="/login">
+            <Link to="/login"><Icon type="tool" />Login</Link>
           </Menu.Item>
-          <Menu.Item key="/contact">
-            <Link to="/contact"><Icon type="profile" />Contact</Link>
-          </Menu.Item>
-          <Menu.Item key="/about">
-            <Link to="/about"><Icon type="idcard" />About</Link>
-          </Menu.Item>
-          <Menu.Item key="/maintain">
-            <Link to="/maintain"><Icon type="tool" />Maintain</Link>
-          </Menu.Item>
+          }
+          { user &&
           <SubMenu
             key="/user"
             style={{ float: 'right' }}
@@ -49,9 +43,10 @@ function MaintainHeader({ history, user, logoutHandler }) {
               </span>}
           >
             <Menu.Item key="logout">
-              注销
+              Logout
             </Menu.Item>
           </SubMenu>
+          }
         </Menu>
       </Row>
     </div>
