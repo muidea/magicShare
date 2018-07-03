@@ -16,6 +16,7 @@ const formItemLayout = {
 }
 
 const MediaPanel = ({
+  serverUrl,
   onSubmit,
   onCancel,
   form: {
@@ -35,7 +36,7 @@ const MediaPanel = ({
   const props = {
     name: 'file',
     multiple: false,
-    action: '//jsonplaceholder.typicode.com/posts/',
+    action: serverUrl,
     onChange(info) {
       const status = info.file.status
       if (status !== 'uploading') {

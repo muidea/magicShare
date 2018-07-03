@@ -10,5 +10,6 @@ module.exports = {
     userLogout: `${APIV1}/cas/user/`,
     indexQuery: `${APIV1}/content/medias/`,
     noFoundPage: `${APIV1}/404.html`,
+    fileRegistry: `${APIV1}/fileregistry/file/`,
   },
 }

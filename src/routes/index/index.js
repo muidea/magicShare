@@ -6,7 +6,7 @@ import MediaPanel from './mediaPanel'
 import styles from './index.less'
 
 function IndexPage({ index, dispatch }) {
-  const { summaryList, readOnly, addNewFlag } = index
+  const { summaryList, serverUrl, readOnly, addNewFlag } = index
 
   const onSelect = (value) => {
     dispatch({ type: 'app/redirectContent', payload: { ...value } })
@@ -66,7 +66,7 @@ function IndexPage({ index, dispatch }) {
       }
       {
         addNewFlag &&
-        <MediaPanel onSubmit={onSubmit} onCancel={onCancel} />
+        <MediaPanel serverUrl={serverUrl} onSubmit={onSubmit} onCancel={onCancel} />
       }
     </div>
   )

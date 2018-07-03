@@ -1,5 +1,9 @@
 import { queryIndex } from 'services/index'
+import { config } from 'utils'
 import qs from 'qs'
+
+const { api } = config
+const { fileRegistry } = api
 
 export default {
 
@@ -7,6 +11,7 @@ export default {
 
   state: {
     summaryList: [],
+    serverUrl: '',
     readOnly: true,
     addNewFlag: false,
   },
@@ -26,12 +31,14 @@ export default {
 
   effects: {
     *queryIndex({ payload }, { call, put, select }) {
-      const { onlineUser } = yield select(_ => _.app)
+      const { onlineUser, sessionID, authToken } = yield select(_ => _.app)
 
       const result = yield call(queryIndex, { ...payload })
       const { data } = result
       const { media } = data
-      yield put({ type: 'save', payload: { summaryList: media, readOnly: !onlineUser } })
+      const param = qs.stringify({ sessionID, authToken, 'key-name': 'file' })
+      const serverUrl = `${fileRegistry}?${param}`
+      yield put({ type: 'save', payload: { summaryList: media, serverUrl, readOnly: !onlineUser } })
     },
 
     *addNew({ payload }, { put, select }) {
