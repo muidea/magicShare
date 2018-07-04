@@ -9,9 +9,10 @@ module.exports = {
     userLoginUrl: `${APIV1}/cas/user/`,
     userLogoutUrl: `${APIV1}/cas/user/`,
     queryAllFileUrl: `${APIV1}/content/medias/`,
+    queryFileUrl: `${APIV1}/content/media/:id`,
     deleteFileUrl: `${APIV1}/content/media/:id`,
     batchAddFileUrl: `${APIV1}/content/media/batch/`,
     noFoundPageUrl: `${APIV1}/404.html`,
-    fileRegistryUrl: `${APIV1}/fileRegistryUrl/file/`,
+    fileRegistryUrl: `${APIV1}/fileregistry/file/`,
   },
 }

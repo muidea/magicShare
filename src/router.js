@@ -19,6 +19,11 @@ const RouterConfig = ({ history, app }) => {
       component: () => import('./routes/index/'),
     },
     {
+      path: '/view/:id',
+      models: () => [import('./models/view')],
+      component: () => import('./routes/view/'),
+    },
+    {
       path: '/login',
       component: () => import('./routes/login/'),
     },

@@ -34,7 +34,7 @@ export default class MultiUpload extends Component {
       newFileList = newFileList.filter((file) => {
         if (file.response) {
           if (file.response.errorCode === 0) {
-            valList.push({ name: file.name, fileToken: file.response.accessToken })
+            valList.push({ name: file.name, fileToken: file.response.fileToken })
             return true
           }
         }

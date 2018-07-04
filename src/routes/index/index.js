@@ -1,16 +1,13 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'dva'
+import { Link } from 'dva/router'
 import { Row, List, Col, Button } from 'antd'
 import MediaPanel from './mediaPanel'
 import styles from './index.less'
 
 function IndexPage({ index, dispatch }) {
   const { summaryList, serverUrl, readOnly, addNewFlag } = index
-
-  const onSelect = (value) => {
-    dispatch({ type: 'app/redirectContent', payload: { ...value } })
-  }
 
   const onDelete = (value) => {
     const { id } = value
@@ -31,7 +28,7 @@ function IndexPage({ index, dispatch }) {
 
   const TitleText = ({ item }) => (
     <div>
-      <a><h1 onClick={() => onSelect(item)}>{item.name}</h1></a>
+      <Link to={`/view/${item.id}`}><h1>{item.name}</h1></Link>
     </div>
   )
 
@@ -39,12 +36,12 @@ function IndexPage({ index, dispatch }) {
     <div>
       <div>{ item.description}</div>
       <Row gutter={24} type="flex" align="middle">
-        <Col xl={{ span: 18 }} md={{ span: 18 }}>
+        <Col xl={{ span: 22 }} md={{ span: 22 }}>
           <span>
             Post by {item.creater.name} on { item.createDate }
           </span>
         </Col>
-        { !readOnly && <Col xl={{ span: 6 }} md={{ span: 6 }}>
+        { !readOnly && <Col xl={{ span: 2 }} md={{ span: 2 }}>
           <Button className={styles.button} onClick={() => onDelete(item)} >删除</Button>
         </Col>
         }
