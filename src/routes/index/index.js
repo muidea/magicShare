@@ -6,7 +6,7 @@ import MediaPanel from './mediaPanel'
 import styles from './index.less'
 
 function IndexPage({ index, dispatch }) {
-  const { summaryList, serverUrl, readOnly, addNewFlag } = index
+  const { summaryList, serverUrl, readOnly, addNewFlag, uploadFileList } = index
 
   const onSelect = (value) => {
     dispatch({ type: 'app/redirectContent', payload: { ...value } })
@@ -30,6 +30,10 @@ function IndexPage({ index, dispatch }) {
 
   const onCancel = (value) => {
     dispatch({ type: 'index/cancelNew', payload: { ...value } })
+  }
+
+  const onUpdateFileList = (fileList) => {
+    dispatch({ type: 'index/updateFileList', payload: { fileList } })
   }
 
   const TitleText = ({ item }) => (
@@ -59,14 +63,14 @@ function IndexPage({ index, dispatch }) {
   const NewPanel = () => (
     <div>
       {
-        !addNewFlag &&
+        !readOnly && !addNewFlag &&
         <Button type="dashed" style={{ width: '100%', marginBottom: 8 }} icon="plus" onClick={onNew} >
         添加
         </Button>
       }
       {
-        addNewFlag &&
-        <MediaPanel serverUrl={serverUrl} onSubmit={onSubmit} onCancel={onCancel} />
+        !readOnly && addNewFlag &&
+        <MediaPanel serverUrl={serverUrl} onSubmit={onSubmit} onCancel={onCancel} uploadFileList={uploadFileList} onUpdateFileList={onUpdateFileList} />
       }
     </div>
   )

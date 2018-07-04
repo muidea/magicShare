@@ -14,6 +14,7 @@ export default {
     serverUrl: '',
     readOnly: true,
     addNewFlag: false,
+    uploadFileList: [],
   },
 
   subscriptions: {
@@ -58,9 +59,15 @@ export default {
     *cancelNew({ payload }, { put }) {
       yield put({ type: 'save', payload: { addNewFlag: false } })
     },
+
   },
 
   reducers: {
+    updateFileList(state, { payload }) {
+      const { fileList } = payload
+      return { ...state, updateFileList: fileList }
+    },
+
     save(state, action) {
       return { ...state, ...action.payload }
     },
