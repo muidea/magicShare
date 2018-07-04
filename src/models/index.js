@@ -1,4 +1,4 @@
-import { queryIndex } from 'services/index'
+import { queryIndex, batchAddFile } from 'services/index'
 import { config } from 'utils'
 import qs from 'qs'
 
@@ -14,7 +14,6 @@ export default {
     serverUrl: '',
     readOnly: true,
     addNewFlag: false,
-    uploadFileList: [],
   },
 
   subscriptions: {
@@ -39,7 +38,7 @@ export default {
       const { media } = data
       const param = qs.stringify({ sessionID, authToken, 'key-name': 'file' })
       const serverUrl = `${fileRegistry}?${param}`
-      yield put({ type: 'save', payload: { summaryList: media, serverUrl, readOnly: !onlineUser } })
+      yield put({ type: 'save', payload: { summaryList: media, serverUrl, readOnly: !onlineUser, addNewFlag: false } })
     },
 
     *addNew({ payload }, { put, select }) {
@@ -49,10 +48,16 @@ export default {
       }
     },
 
-    *submitNew({ payload }, { put, select }) {
-      const { onlineUser } = yield select(_ => _.app)
-      if (onlineUser) {
-        yield put({ type: 'save', payload: { addNewFlag: false } })
+    *submitNew({ payload }, { put, call, select }) {
+      const { fileList, description, catalog, privacy, expiration } = payload
+      const { sessionID, authToken } = yield select(_ => _.app)
+      const result = yield call(batchAddFile, { medias: fileList, description, catalog, expiration, privacy, sessionID, authToken })
+      const { errorCode } = result
+      if (errorCode === 0) {
+        const queryResult = yield call(queryIndex, { ...payload })
+        const { data } = queryResult
+        const { media } = data
+        yield put({ type: 'save', payload: { summaryList: media, addNewFlag: false } })
       }
     },
 
@@ -63,11 +68,6 @@ export default {
   },
 
   reducers: {
-    updateFileList(state, { payload }) {
-      const { fileList } = payload
-      return { ...state, updateFileList: fileList }
-    },
-
     save(state, action) {
       return { ...state, ...action.payload }
     },

@@ -10,9 +10,6 @@ export default class MultiUpload extends Component {
   }
 
   handleChange = (info) => {
-    console.log('handleChange')
-    console.log(info)
-
     let newFileList = []
     const fileList = info.fileList
     for (let offset = 0; offset < fileList.length; offset += 1) {
@@ -37,7 +34,7 @@ export default class MultiUpload extends Component {
       newFileList = newFileList.filter((file) => {
         if (file.response) {
           if (file.response.errorCode === 0) {
-            valList.push({ name: file.name, accessToken: file.response.accessToken })
+            valList.push({ name: file.name, fileToken: file.response.accessToken })
             return true
           }
         }
@@ -55,7 +52,6 @@ export default class MultiUpload extends Component {
   }
 
   beforeUpload = (file) => {
-    console.log('beforeUpload')
     let existFlag = false
     const { fileList } = this.state
     for (const item of fileList) {

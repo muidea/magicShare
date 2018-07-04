@@ -38,8 +38,6 @@ const MediaPanel = ({
         values = { ...values, description: '' }
       }
 
-      console.log(values)
-
       onSubmit(values)
     })
   }
