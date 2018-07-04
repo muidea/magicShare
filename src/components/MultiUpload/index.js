@@ -81,7 +81,7 @@ export default class MultiUpload extends Component {
         <p className="ant-upload-drag-icon">
           <Icon type="inbox" />
         </p>
-        <p className="ant-upload-text">选择文件进行上传</p>
+        <p className="ant-upload-text">选择上传文件</p>
       </Dragger>
     )
   }

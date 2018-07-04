@@ -7,7 +7,9 @@ export default class EditableTagGroup extends Component {
     super(props)
     if ('value' in props) {
       const { value } = props
-      this.state = { ...this.state, value }
+      if (value) {
+        this.state = { ...this.state, value }
+      }
     }
   }
 
@@ -20,7 +22,9 @@ export default class EditableTagGroup extends Component {
   componentWillReceiveProps(nextProps) {
     if ('value' in nextProps) {
       const { value } = nextProps
-      this.setState({ value })
+      if (value) {
+        this.setState({ value })
+      }
     }
   }
 
