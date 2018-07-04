@@ -1,9 +1,9 @@
-import { queryIndex, batchAddFile } from 'services/index'
+import { queryAllFile, deleteFile, batchAddFile } from 'services/index'
 import { config } from 'utils'
 import qs from 'qs'
 
 const { api } = config
-const { fileRegistry } = api
+const { fileRegistryUrl } = api
 
 export default {
 
@@ -21,7 +21,7 @@ export default {
       history.listen((location) => {
         if (location.pathname === '/') {
           dispatch({
-            type: 'queryIndex',
+            type: 'queryAllFile',
             payload: qs.parse(location.search),
           })
         }
@@ -30,15 +30,22 @@ export default {
   },
 
   effects: {
-    *queryIndex({ payload }, { call, put, select }) {
+    *queryAllFile({ payload }, { call, put, select }) {
       const { onlineUser, sessionID, authToken } = yield select(_ => _.app)
 
-      const result = yield call(queryIndex, { ...payload })
+      const result = yield call(queryAllFile, { ...payload })
       const { data } = result
       const { media } = data
       const param = qs.stringify({ sessionID, authToken, 'key-name': 'file' })
-      const serverUrl = `${fileRegistry}?${param}`
+      const serverUrl = `${fileRegistryUrl}?${param}`
       yield put({ type: 'save', payload: { summaryList: media, serverUrl, readOnly: !onlineUser, addNewFlag: false } })
+    },
+
+    *deleteFile({ payload }, { call, put, select }) {
+      const { sessionID, authToken } = yield select(_ => _.app)
+
+      yield call(deleteFile, { ...payload, sessionID, authToken })
+      yield put({ type: 'queryAllFile' })
     },
 
     *addNew({ payload }, { put, select }) {
@@ -51,14 +58,9 @@ export default {
     *submitNew({ payload }, { put, call, select }) {
       const { fileList, description, catalog, privacy, expiration } = payload
       const { sessionID, authToken } = yield select(_ => _.app)
-      const result = yield call(batchAddFile, { medias: fileList, description, catalog, expiration, privacy, sessionID, authToken })
-      const { errorCode } = result
-      if (errorCode === 0) {
-        const queryResult = yield call(queryIndex, { ...payload })
-        const { data } = queryResult
-        const { media } = data
-        yield put({ type: 'save', payload: { summaryList: media, addNewFlag: false } })
-      }
+      yield call(batchAddFile, { medias: fileList, description, catalog, expiration, privacy, sessionID, authToken })
+      yield put({ type: 'queryAllFile' })
+      yield put({ type: 'save', payload: { addNewFlag: false } })
     },
 
     *cancelNew({ payload }, { put }) {

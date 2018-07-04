@@ -12,12 +12,9 @@ function IndexPage({ index, dispatch }) {
     dispatch({ type: 'app/redirectContent', payload: { ...value } })
   }
 
-  const onModify = (value) => {
-    dispatch({ type: 'app/redirectContent', payload: { ...value } })
-  }
-
   const onDelete = (value) => {
-    dispatch({ type: 'app/redirectContent', payload: { ...value } })
+    const { id } = value
+    dispatch({ type: 'index/deleteFile', payload: { id } })
   }
 
   const onNew = () => {
@@ -48,7 +45,6 @@ function IndexPage({ index, dispatch }) {
           </span>
         </Col>
         { !readOnly && <Col xl={{ span: 6 }} md={{ span: 6 }}>
-          <Button className={styles.button} onClick={() => onModify(item)} >编辑</Button>
           <Button className={styles.button} onClick={() => onDelete(item)} >删除</Button>
         </Col>
         }

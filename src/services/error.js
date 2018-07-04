@@ -1,11 +1,11 @@
 import { request, config } from 'utils'
 
 const { api } = config
-const { noFoundPage } = api
+const { noFoundPageUrl } = api
 
 export async function queryNoFound(params) {
   return request({
-    url: noFoundPage,
+    url: noFoundPageUrl,
     method: 'get',
     data: params,
   })
