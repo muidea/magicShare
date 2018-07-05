@@ -1,5 +1,10 @@
+import { routerRedux } from 'dva/router'
 import { queryFile, downloadFile } from 'services/view'
 import pathToRegexp from 'path-to-regexp'
+import qs from 'qs'
+import { config } from 'utils'
+
+const { staticPrefix } = config
 
 export default {
 
@@ -11,7 +16,7 @@ export default {
     catalog: [],
     createDate: '',
     creater: {},
-    fileUril: '',
+    fileUrl: '',
     expiration: 0,
   },
 
@@ -31,6 +36,12 @@ export default {
 
   /* eslint no-shadow: ["error", { "allow": ["data", "errorCode"] }]*/
   effects: {
+    *returnBack({ payload }, { put }) {
+      yield put(routerRedux.push({
+        pathname: '/',
+      }))
+    },
+
     *queryFile({ payload }, { call, put, select }) {
       const { sessionID, authToken } = yield select(_ => _.app)
 
@@ -42,8 +53,9 @@ export default {
         const downloadResult = yield call(downloadFile, { fileToken, sessionID, authToken })
         const { data } = downloadResult
         const { errorCode, redirectUrl } = data
+        const param = qs.stringify({ sessionID, authToken })
         if (errorCode === 0) {
-          yield put({ type: 'save', payload: { name, description, catalog, createDate, creater, expiration, redirectUrl } })
+          yield put({ type: 'save', payload: { name, description, catalog, createDate, creater, expiration, fileUrl: `${staticPrefix}${redirectUrl}&${param}` } })
         }
       }
     },

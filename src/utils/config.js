@@ -4,6 +4,7 @@ module.exports = {
   name: 'MagicShare',
   prefix: 'magicShare',
   footerText: 'magicShare © 2017 muidea.com',
+  staticPrefix: '/static/',
   api: {
     userStatusUrl: `${APIV1}/cas/user/`,
     userLoginUrl: `${APIV1}/cas/user/`,
@@ -12,7 +13,7 @@ module.exports = {
     queryFileUrl: `${APIV1}/content/media/:id`,
     deleteFileUrl: `${APIV1}/content/media/:id`,
     batchAddFileUrl: `${APIV1}/content/media/batch/`,
-    noFoundPageUrl: `${APIV1}/404.html`,
     fileRegistryUrl: `${APIV1}/fileregistry/file/`,
+    noFoundPageUrl: `${APIV1}/404.html`,
   },
 }

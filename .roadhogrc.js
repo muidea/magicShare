@@ -30,5 +30,9 @@ export default {
       "changeOrigin": true,
       "pathRewrite": { "^/api/v1/": "/" }
     },
+    "/static/": {
+      "target": "http://localhost:8888/",
+      "changeOrigin": true,
+    },    
   }
 }
