@@ -34,8 +34,15 @@ export default {
   /* eslint no-shadow: ["error", { "allow": ["data", "errorCode"] }]*/
   effects: {
     *returnBack({ payload }, { put }) {
+      let search = ''
+      if (payload) {
+        const { id } = payload
+        search = qs.stringify({ catalog: id })
+      }
+
       yield put(routerRedux.push({
         pathname: '/',
+        search,
       }))
     },
 

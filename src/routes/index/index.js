@@ -3,11 +3,16 @@ import PropTypes from 'prop-types'
 import { connect } from 'dva'
 import { Link } from 'dva/router'
 import { Row, List, Col, Button } from 'antd'
+import { EditableTagGroup } from 'components'
 import MediaPanel from './mediaPanel'
 import styles from './index.less'
 
 function IndexPage({ index, dispatch }) {
   const { summaryList, serverUrl, readOnly, addNewFlag } = index
+
+  const onSelect = (tag) => {
+    dispatch({ type: 'index/viewCatalog', payload: { ...tag } })
+  }
 
   const onDelete = (value) => {
     const { id } = value
@@ -33,12 +38,12 @@ function IndexPage({ index, dispatch }) {
   )
 
   const DescText = ({ item }) => (
-    <div>
-      <div>{ item.description}</div>
+    <div className="content-inner">
+      <div className={styles.description} >{ item.description}</div>
       <Row gutter={24} type="flex" align="middle">
         <Col xl={{ span: 22 }} md={{ span: 22 }}>
           <span>
-            Post by {item.creater.name} on { item.createDate }
+            <EditableTagGroup readOnly onSelect={onSelect} value={item.catalog} /> Post by {item.creater.name} on { item.createDate }
           </span>
         </Col>
         { !readOnly && <Col xl={{ span: 2 }} md={{ span: 2 }}>

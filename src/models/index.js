@@ -22,7 +22,7 @@ export default {
         if (location.pathname === '/') {
           dispatch({
             type: 'queryAllFile',
-            payload: qs.parse(location.search),
+            payload: qs.parse(location.search, { ignoreQueryPrefix: true }),
           })
         }
       })
@@ -30,9 +30,17 @@ export default {
   },
 
   effects: {
+    *viewCatalog({ payload }, { call, put }) {
+      const { id } = payload
+
+      const result = yield call(queryAllFile, { catalog: id })
+      const { data } = result
+      const { media } = data
+      yield put({ type: 'save', payload: { summaryList: media } })
+    },
+
     *queryAllFile({ payload }, { call, put, select }) {
       const { onlineUser, sessionID, authToken } = yield select(_ => _.app)
-
       const result = yield call(queryAllFile, { ...payload })
       const { data } = result
       const { media } = data

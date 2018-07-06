@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { Tag, Input, Tooltip, Icon } from 'antd'
+import styles from './index.less'
 
 export default class EditableTagGroup extends Component {
   constructor(props) {
@@ -25,6 +26,13 @@ export default class EditableTagGroup extends Component {
       if (value) {
         this.setState({ value })
       }
+    }
+  }
+
+  handleClick = (tag) => {
+    const { onSelect } = this.props
+    if (onSelect) {
+      onSelect(tag)
     }
   }
 
@@ -79,11 +87,11 @@ export default class EditableTagGroup extends Component {
   render() {
     const { value, inputVisible, inputValue } = this.state
     return (
-      <div>
+      <div className={styles.tagGroup}>
         {value && value.map((tag) => {
           const isLongTag = tag.name.length > 20
           const tagElem = (
-            <Tag key={tag.name} closable={!this.props.readOnly} afterClose={() => this.handleClose(tag.name)}>
+            <Tag key={tag.name} closable={!this.props.readOnly} onClick={() => this.handleClick(tag)} afterClose={() => this.handleClose(tag.name)}>
               {isLongTag ? `${tag.name.slice(0, 20)}...` : tag.name}
             </Tag>
           )

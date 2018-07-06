@@ -7,12 +7,14 @@ import { DescriptionList, EditableTagGroup } from 'components'
 const { Description } = DescriptionList
 
 function ViewPage({ view, dispatch }) {
-  console.log(view)
-
   const { name, description, catalog, createDate, creater, fileUrl } = view
 
   const onReturn = () => {
     dispatch({ type: 'view/returnBack' })
+  }
+
+  const onSelect = (tag) => {
+    dispatch({ type: 'view/returnBack', payload: { ...tag } })
   }
 
   return (
@@ -20,7 +22,7 @@ function ViewPage({ view, dispatch }) {
       <DescriptionList size="large" title="文件信息" style={{ marginBottom: 32 }}>
         <Description term="文件名">{name}</Description>
         <Description term="描述">{description}</Description>
-        <Description term="分组"><EditableTagGroup readOnly value={catalog} /></Description>
+        <Description term="分组"><EditableTagGroup readOnly onSelect={onSelect} value={catalog} /></Description>
         <Description term="上传时间">{createDate}</Description>
         <Description term="上传者">{creater.name}</Description>
         <Description term="下载文件"><Button style={{ border: 0 }} size="large" icon="download" target="_blank" href={fileUrl} /></Description>
