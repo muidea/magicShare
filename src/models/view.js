@@ -2,9 +2,6 @@ import { routerRedux } from 'dva/router'
 import { queryFile, downloadFile } from 'services/view'
 import pathToRegexp from 'path-to-regexp'
 import qs from 'qs'
-import { config } from 'utils'
-
-const { staticPrefix } = config
 
 export default {
 
@@ -55,7 +52,7 @@ export default {
         const { errorCode, redirectUrl } = data
         const param = qs.stringify({ sessionID, authToken })
         if (errorCode === 0) {
-          yield put({ type: 'save', payload: { name, description, catalog, createDate, creater, expiration, fileUrl: `${staticPrefix}${redirectUrl}&${param}` } })
+          yield put({ type: 'save', payload: { name, description, catalog, createDate, creater, expiration, fileUrl: `${redirectUrl}?${param}` } })
         }
       }
     },
