@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "magic-share",
-  "version": "1.0.2",
+  "version": "1.0.0",
   "scripts": {
     "start": "roadhog server",
     "dev": "cross-env BROWSER=none HOST=0.0.0.0 roadhog server",
