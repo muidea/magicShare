@@ -4,11 +4,9 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"strconv"
 
 	"muidea.com/magicCommon/agent"
 	common_result "muidea.com/magicCommon/common"
-	"muidea.com/magicCommon/foundation/net"
 	"muidea.com/magicCommon/model"
 	engine "muidea.com/magicEngine"
 )
@@ -39,26 +37,26 @@ func newRoute(pattern, method string, handler interface{}) engine.Route {
 func NewShare(centerServer, name, endpointID, authToken string) (Share, bool) {
 	share := Share{}
 
-	agent := agent.NewCenterAgent()
+	agent := agent.New()
 	ok := agent.Start(centerServer, endpointID, authToken)
 	if !ok {
 		return share, false
 	}
-	shareCatalog, ok := agent.FetchCatalog(name)
+	shareCatalog, ok := agent.FetchSummary(name)
 	if !ok {
-		_, ok = agent.CreateCatalog(name, "MagicShare auto create catalog.", []model.Catalog{}, authToken, "")
+		_, ok = agent.CreateCatalog(name, "MagicShare auto create catalog.", []model.Catalog{}, 0)
 		if !ok {
 			log.Print("create share root catalog failed.")
 			return share, false
 		}
 	}
-	shareCatalog, ok = agent.FetchCatalog(name)
+	shareCatalog, ok = agent.FetchSummary(name)
 	if !ok {
 		log.Print("fetch share root ctalog failed.")
 		return share, false
 	}
 
-	shareContent := agent.QuerySummary(shareCatalog.ID)
+	shareContent := agent.QuerySummaryDetail(shareCatalog.ID)
 
 	share.centerAgent = agent
 	share.shareInfo = shareCatalog
@@ -70,7 +68,7 @@ func NewShare(centerServer, name, endpointID, authToken string) (Share, bool) {
 // Share Share对象
 type Share struct {
 	centerAgent  agent.Agent
-	shareInfo    model.CatalogDetailView
+	shareInfo    model.SummaryView
 	shareContent []model.SummaryView
 }
 
@@ -78,24 +76,6 @@ type Share struct {
 func (s *Share) Startup(router engine.Router) {
 	mainRoute := newRoute("/", "GET", s.mainPage)
 	router.AddRoute(mainRoute)
-
-	catalogSummaryRoute := newRoute("/catalog/", "GET", s.catalogSummaryPage)
-	router.AddRoute(catalogSummaryRoute)
-
-	catalogSummaryByIDRoute := newRoute("/catalog/:id", "GET", s.catalogSummaryByIDPage)
-	router.AddRoute(catalogSummaryByIDRoute)
-
-	contentRoute := newRoute("/content/:id", "GET", s.contentPage)
-	router.AddRoute(contentRoute)
-
-	aboutRoute := newRoute("/about", "GET", s.aboutPage)
-	router.AddRoute(aboutRoute)
-
-	contactRoute := newRoute("/contact", "GET", s.contactPage)
-	router.AddRoute(contactRoute)
-
-	noFoundRoute := newRoute("/404.html", "GET", s.noFoundPage)
-	router.AddRoute(noFoundRoute)
 
 	statusRoute := newRoute("/user/status", "GET", s.statusAction)
 	router.AddRoute(statusRoute)
@@ -106,29 +86,17 @@ func (s *Share) Startup(router engine.Router) {
 	logoutRoute := newRoute("/user/logout", "DELETE", s.logoutAction)
 	router.AddRoute(logoutRoute)
 
-	summaryRoute := newRoute("/maintain/summary", "GET", s.summaryAction)
-	router.AddRoute(summaryRoute)
+	noFoundRoute := newRoute("/404.html", "GET", s.noFoundPage)
+	router.AddRoute(noFoundRoute)
 
-	catalogCreateRoute := newRoute("/maintain/catalog", "POST", s.catalogCreateAction)
+	catalogCreateRoute := newRoute("/file/", "POST", s.uploadAction)
 	router.AddRoute(catalogCreateRoute)
 
-	catalogQueryRoute := newRoute("/maintain/catalog/:id", "GET", s.catalogQueryAction)
+	catalogQueryRoute := newRoute("/file/:id", "GET", s.viewAction)
 	router.AddRoute(catalogQueryRoute)
 
-	articleCreateRoute := newRoute("/maintain/article", "POST", s.articleCreateAction)
-	router.AddRoute(articleCreateRoute)
-
-	catalogUpdateRoute := newRoute("/maintain/catalog/:id", "PUT", s.catalogUpdateAction)
-	router.AddRoute(catalogUpdateRoute)
-
-	articleUpdateRoute := newRoute("/maintain/article/:id", "PUT", s.articleUpdateAction)
-	router.AddRoute(articleUpdateRoute)
-
-	catalogDeleteRoute := newRoute("/maintain/catalog/:id", "DELETE", s.catalogDeleteAction)
+	catalogDeleteRoute := newRoute("/file/:id", "DELETE", s.deleteAction)
 	router.AddRoute(catalogDeleteRoute)
-
-	articleDeleteRoute := newRoute("/maintain/article/:id", "DELETE", s.articleDeleteAction)
-	router.AddRoute(articleDeleteRoute)
 }
 
 // Teardown 销毁
@@ -213,142 +181,6 @@ func (s *Share) mainPage(res http.ResponseWriter, req *http.Request) {
 	}
 
 	log.Print("mainPage, json.Marshal, failed, err:" + err.Error())
-}
-
-func (s *Share) catalogSummaryPage(res http.ResponseWriter, req *http.Request) {
-	log.Print("catalogSummaryPage")
-
-	result := summaryViewResult{}
-	catalogView, ok := s.getCatalogView()
-	if ok {
-		result.SummaryList = s.centerAgent.QuerySummary(catalogView.ID)
-		result.ErrorCode = common_result.Success
-	} else {
-		result.ErrorCode = common_result.Redirect
-		result.Reason = "/default/catalog.html"
-	}
-
-	block, err := json.Marshal(result)
-	if err == nil {
-		res.Write(block)
-		return
-	}
-
-	log.Print("catalogSummaryPage, json.Marshal, failed, err:" + err.Error())
-}
-
-func (s *Share) catalogSummaryByIDPage(res http.ResponseWriter, req *http.Request) {
-	log.Print("catalogSummaryByIDPage")
-
-	result := summaryViewResult{}
-	_, value := net.SplitRESTAPI(req.URL.Path)
-	id, err := strconv.Atoi(value)
-	if err == nil {
-		result.SummaryList = s.centerAgent.QuerySummary(id)
-		result.ErrorCode = common_result.Success
-	} else {
-		result.ErrorCode = common_result.IllegalParam
-		result.Reason = "非法参数"
-	}
-
-	block, err := json.Marshal(result)
-	if err == nil {
-		res.Write(block)
-		return
-	}
-
-	log.Print("catalogSummaryByIDPage, json.Marshal, failed, err:" + err.Error())
-}
-
-type contentResult struct {
-	common_result.Result
-	Content model.ArticleDetailView `json:"content"`
-}
-
-func (s *Share) contentPage(res http.ResponseWriter, req *http.Request) {
-	log.Print("contentPage")
-
-	result := contentResult{}
-	_, value := net.SplitRESTAPI(req.URL.Path)
-	id, err := strconv.Atoi(value)
-	if err == nil {
-		article, ok := s.centerAgent.QueryArticle(id)
-		if ok {
-			result.Content = article
-			result.ErrorCode = common_result.Success
-		} else {
-			result.ErrorCode = common_result.NoExist
-			result.Reason = "对象不存在"
-		}
-
-	} else {
-		result.ErrorCode = common_result.IllegalParam
-		result.Reason = "非法参数"
-	}
-
-	block, err := json.Marshal(result)
-	if err == nil {
-		res.Write(block)
-		return
-	}
-
-	log.Print("contentPage, json.Marshal, failed, err:" + err.Error())
-}
-
-func (s *Share) aboutPage(res http.ResponseWriter, req *http.Request) {
-	log.Print("aboutPage")
-
-	result := contentResult{}
-	aboutView, ok := s.getAboutView()
-	if ok {
-		article, ok := s.centerAgent.QueryArticle(aboutView.ID)
-		if ok {
-			result.Content = article
-			result.ErrorCode = common_result.Success
-		} else {
-			result.ErrorCode = common_result.NoExist
-			result.Reason = "对象不存在"
-		}
-	} else {
-		result.ErrorCode = common_result.Redirect
-		result.Reason = "/default/about.html"
-	}
-
-	block, err := json.Marshal(result)
-	if err == nil {
-		res.Write(block)
-		return
-	}
-
-	log.Print("aboutPage, json.Marshal, failed, err:" + err.Error())
-}
-
-func (s *Share) contactPage(res http.ResponseWriter, req *http.Request) {
-	log.Print("contactPage")
-
-	result := contentResult{}
-	contactView, ok := s.getContactView()
-	if ok {
-		article, ok := s.centerAgent.QueryArticle(contactView.ID)
-		if ok {
-			result.Content = article
-			result.ErrorCode = common_result.Success
-		} else {
-			result.ErrorCode = common_result.NoExist
-			result.Reason = "对象不存在"
-		}
-	} else {
-		result.ErrorCode = common_result.Redirect
-		result.Reason = "/default/contact.html"
-	}
-
-	block, err := json.Marshal(result)
-	if err == nil {
-		res.Write(block)
-		return
-	}
-
-	log.Print("contactPage, json.Marshal, failed, err:" + err.Error())
 }
 
 func (s *Share) noFoundPage(res http.ResponseWriter, req *http.Request) {
