@@ -1,9 +1,9 @@
 #!/bin/bash
 
 rootPath=$GOPATH
-projectName=magicBlog
-projectPath=$rootPath/src/muidea.com/$projectName
-binPath=$rootPath/bin/$projectName
+projectName=magicShareUI
+projectPath=$rootPath/src/muidea.com/magicShare/ui
+binPath=$projectPath/dist
 imageID=""
 imageNamespace=muidea.ai/develop
 imageVersion=latest
@@ -28,13 +28,16 @@ function cleanUp()
 function buildBin()
 {
     echo "buildBin..."
-    go install muidea.com/magicBlog/cmd/magicBlog
+    curPath=$(pwd)
+    cd $projectPath
+    npm run build
     if [ $? -ne 0 ]; then
         echo "buildBin failed."
         exit 1
     else
         echo "buildBin success."
     fi
+    cd $curPath
 }
 
 function prepareFile()
@@ -47,13 +50,24 @@ function prepareFile()
         fi
     fi
 
-    cp $binPath ./
+    src=$(ls $binPath|tail -1)
+    cp -r $binPath $src
     if [ $? -ne 0 ]; then
-        echo "prepareFile failed."
+        echo "prepare file failed, copy failed exception."
+        exit 1
+    fi
+
+    curPath=$(pwd)
+    cd $src
+    tar -caf ../$projectName *
+    if [ $? -ne 0 ]; then
+        echo "prepare file failed, compress failed exception."
         exit 1
     else
-        echo "prepareFile success."
-    fi    
+        echo "prepare filed success."
+    fi
+    cd $curPath
+    rm -rf $src
 }
 
 function checkImage()
@@ -106,7 +120,7 @@ function rmiImage()
 
 function all()
 {
-    echo "build magicBlog docker image"
+    echo "build docker image"
 
     curPath=$(pwd)
 

@@ -1,14 +1,19 @@
-FROM nginx
+FROM centos
 
 LABEL Author="rangh"
-LABEL Application="magicShare"
 
+RUN mkdir -p /var/app
 
-RUN mkdir -p /etc/nginx/logs
+WORKDIR /var/app
 
-COPY magicShare /tmp/
-RUN cd /tmp \
- && tar -xvf magicShare -C /usr/share/nginx/html/ \
- && rm -f magicShare
+ADD magicBlog /var/app/magicBlog
+ADD bootstrap.sh /var/app/bootstrap.sh
+ADD wait-for-it.sh /var/app/wait-for-it.sh
 
-ADD nginx.conf /etc/nginx/nginx.conf
+RUN chmod +x /var/app/magicBlog
+RUN chmod +x /var/app/bootstrap.sh
+RUN chmod +x /var/app/wait-for-it.sh
+
+ENTRYPOINT [ "/var/app/bootstrap.sh" ]
+
+EXPOSE 8080
