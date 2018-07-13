@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	common_def "muidea.com/magicCommon/common"
-	common_result "muidea.com/magicCommon/common"
+	common_const "muidea.com/magicCommon/common"
+	common_def "muidea.com/magicCommon/def"
 	"muidea.com/magicCommon/foundation/net"
 	"muidea.com/magicCommon/model"
 )
@@ -15,17 +15,17 @@ func (s *Share) statusAction(res http.ResponseWriter, req *http.Request) {
 	log.Print("statusAction")
 
 	type statusResult struct {
-		common_result.Result
+		common_def.Result
 		OnlineUser model.AccountOnlineView `json:"onlineUser"`
 	}
 
 	result := statusResult{}
 	for {
-		authToken := req.URL.Query().Get(common_def.AuthTokenID)
-		sessionID := req.URL.Query().Get(common_def.SessionID)
+		authToken := req.URL.Query().Get(common_const.AuthTokenID)
+		sessionID := req.URL.Query().Get(common_const.SessionID)
 		if len(authToken) == 0 || len(sessionID) == 0 {
 			log.Print("statusAccount failed, illegal authToken or sessionID")
-			result.ErrorCode = common_result.Failed
+			result.ErrorCode = common_def.Failed
 			result.Reason = "无效Token或会话"
 			break
 		}
@@ -33,13 +33,13 @@ func (s *Share) statusAction(res http.ResponseWriter, req *http.Request) {
 		userView, ok := s.centerAgent.StatusAccount(authToken, sessionID)
 		if !ok {
 			log.Print("statusAccount failed, illegal authToken or sessionID")
-			result.ErrorCode = common_result.Failed
+			result.ErrorCode = common_def.Failed
 			result.Reason = "无效Token或会话"
 			break
 		}
 
 		result.OnlineUser = userView
-		result.ErrorCode = common_result.Success
+		result.ErrorCode = common_def.Success
 		break
 	}
 
@@ -60,7 +60,7 @@ func (s *Share) loginAction(res http.ResponseWriter, req *http.Request) {
 		Password string `json:"password"`
 	}
 	type loginResult struct {
-		common_result.Result
+		common_def.Result
 		OnlineUser model.AccountOnlineView `json:"onlineUser"`
 		AuthToken  string                  `json:"authToken"`
 		SessionID  string                  `json:"sessionID"`
@@ -72,7 +72,7 @@ func (s *Share) loginAction(res http.ResponseWriter, req *http.Request) {
 		err := net.ParsePostJSON(req, param)
 		if err != nil {
 			log.Printf("ParsePostJSON failed, err:%s", err.Error())
-			result.ErrorCode = common_result.Failed
+			result.ErrorCode = common_def.Failed
 			result.Reason = "非法请求"
 			break
 		}
@@ -80,7 +80,7 @@ func (s *Share) loginAction(res http.ResponseWriter, req *http.Request) {
 		userView, authToken, sessionID, ok := s.centerAgent.LoginAccount(param.Account, param.Password)
 		if !ok {
 			log.Print("login failed, illegal account or password")
-			result.ErrorCode = common_result.Failed
+			result.ErrorCode = common_def.Failed
 			result.Reason = "无效账号或密码"
 			break
 		}
@@ -88,7 +88,7 @@ func (s *Share) loginAction(res http.ResponseWriter, req *http.Request) {
 		result.OnlineUser = userView
 		result.AuthToken = authToken
 		result.SessionID = sessionID
-		result.ErrorCode = common_result.Success
+		result.ErrorCode = common_def.Success
 		break
 	}
 
@@ -105,16 +105,16 @@ func (s *Share) logoutAction(res http.ResponseWriter, req *http.Request) {
 	log.Print("logoutAction")
 
 	type logoutResult struct {
-		common_result.Result
+		common_def.Result
 	}
 
 	result := logoutResult{}
 	for {
-		authToken := req.URL.Query().Get(common_def.AuthTokenID)
-		sessionID := req.URL.Query().Get(common_def.SessionID)
+		authToken := req.URL.Query().Get(common_const.AuthTokenID)
+		sessionID := req.URL.Query().Get(common_const.SessionID)
 		if len(authToken) == 0 || len(sessionID) == 0 {
 			log.Print("logout failed, illegal authToken or sessionID")
-			result.ErrorCode = common_result.Failed
+			result.ErrorCode = common_def.Failed
 			result.Reason = "无效Token或会话"
 			break
 		}
@@ -122,12 +122,12 @@ func (s *Share) logoutAction(res http.ResponseWriter, req *http.Request) {
 		ok := s.centerAgent.LogoutAccount(authToken, sessionID)
 		if !ok {
 			log.Print("logout failed, illegal authToken or sessionID")
-			result.ErrorCode = common_result.Failed
+			result.ErrorCode = common_def.Failed
 			result.Reason = "非法Token或会话"
 			break
 		}
 
-		result.ErrorCode = common_result.Success
+		result.ErrorCode = common_def.Success
 		break
 	}
 
