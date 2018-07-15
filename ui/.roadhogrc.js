@@ -33,6 +33,6 @@ export default {
     "/static/": {
       "target": "http://localhost:8888/",
       "changeOrigin": true,
-    },    
+    },
   }
 }
