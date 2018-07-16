@@ -26,9 +26,13 @@ export default {
   },
    proxy: {
     "/api/v1/": {
-      "target": "http://localhost:8888/",
+      "target": "http://localhost:8866/",
       "changeOrigin": true,
       "pathRewrite": { "^/api/v1/": "/" }
+    },
+    "/fileregistry/file/": {
+      "target": "http://localhost:8888/",
+      "changeOrigin": true,
     },
     "/static/": {
       "target": "http://localhost:8888/",

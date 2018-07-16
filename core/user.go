@@ -8,6 +8,7 @@ import (
 	common_const "muidea.com/magicCommon/common"
 	common_def "muidea.com/magicCommon/def"
 	"muidea.com/magicCommon/foundation/net"
+	"muidea.com/magicCommon/model"
 )
 
 func (s *Share) statusAction(res http.ResponseWriter, req *http.Request) {
@@ -26,11 +27,16 @@ func (s *Share) statusAction(res http.ResponseWriter, req *http.Request) {
 
 		userView, sessionID, ok := s.centerAgent.StatusAccount(authToken, sessionID)
 		if !ok {
+			s.centerAgent.UnbindAccount()
+
 			log.Print("statusAccount failed, illegal authToken or sessionID")
 			result.ErrorCode = common_def.Failed
 			result.Reason = "无效Token或会话"
 			break
 		}
+
+		user := &model.User{ID: userView.ID, Name: userView.Name}
+		s.centerAgent.BindAccount(user)
 
 		result.OnlineUser = userView
 		result.SessionID = sessionID

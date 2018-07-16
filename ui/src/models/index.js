@@ -2,8 +2,7 @@ import { queryAllFile, deleteFile, batchAddFile } from 'services/index'
 import { config } from 'utils'
 import qs from 'qs'
 
-const { api } = config
-const { fileRegistryUrl } = api
+const { fileRegistry } = config
 
 export default {
 
@@ -45,7 +44,7 @@ export default {
       const { data } = result
       const { media } = data
       const param = qs.stringify({ sessionID, authToken, 'key-name': 'file' })
-      const serverUrl = `${fileRegistryUrl}?${param}`
+      const serverUrl = `${fileRegistry}?${param}`
       yield put({ type: 'save', payload: { summaryList: media, serverUrl, readOnly: !onlineUser, addNewFlag: false } })
     },
 

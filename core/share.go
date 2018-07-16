@@ -59,10 +59,23 @@ func New(centerServer, name, endpointID, authToken string) (Share, bool) {
 	}
 
 	shareContent := agent.QuerySummaryContent(shareCatalog.ID, model.CATALOG, authToken, sessionID)
+	shareView, ok := share.getShareView(shareContent)
+	if !ok {
+		log.Print("get ShareView failed.")
+		return share, false
+	}
+
+	privacyView, ok := share.getPrivacyView(shareContent)
+	if !ok {
+		log.Print("get PrivacyView failed.")
+		return share, false
+	}
+
+	share.shareView = shareView
+	share.privacyView = privacyView
 
 	share.centerAgent = agent
 	share.shareInfo = shareCatalog
-	share.shareContent = shareContent
 	share.endpointID = endpointID
 	share.authToken = authToken
 	share.sessionID = sessionID
@@ -72,48 +85,65 @@ func New(centerServer, name, endpointID, authToken string) (Share, bool) {
 
 // Share Share对象
 type Share struct {
-	centerAgent  agent.Agent
-	shareInfo    model.SummaryView
-	shareContent []model.SummaryView
-	endpointID   string
-	authToken    string
-	sessionID    string
+	centerAgent agent.Agent
+	shareInfo   model.SummaryView
+	endpointID  string
+	authToken   string
+	sessionID   string
+
+	shareView   model.SummaryView
+	privacyView model.SummaryView
 }
 
 // Startup 启动
 func (s *Share) Startup(router engine.Router) {
-	mainRoute := newRoute("/", "GET", s.mainPage)
-	router.AddRoute(mainRoute)
+	catalog := &model.Catalog{ID: s.privacyView.ID, Name: s.privacyView.Name}
+	s.centerAgent.StrictCatalog(catalog)
 
-	statusRoute := newRoute("/user/status", "GET", s.statusAction)
+	statusRoute := newRoute("/user/status/", "GET", s.statusAction)
 	router.AddRoute(statusRoute)
 
-	loginRoute := newRoute("/user/login", "POST", s.loginAction)
+	loginRoute := newRoute("/user/login/", "POST", s.loginAction)
 	router.AddRoute(loginRoute)
 
-	logoutRoute := newRoute("/user/logout", "DELETE", s.logoutAction)
+	logoutRoute := newRoute("/user/logout/", "DELETE", s.logoutAction)
 	router.AddRoute(logoutRoute)
 
-	catalogCreateRoute := newRoute("/file/", "POST", s.uploadAction)
-	router.AddRoute(catalogCreateRoute)
+	mainRoute := newRoute("/file/", "GET", s.mainPage)
+	router.AddRoute(mainRoute)
 
-	catalogQueryRoute := newRoute("/file/:id", "GET", s.viewAction)
-	router.AddRoute(catalogQueryRoute)
+	createRoute := newRoute("/file/", "POST", s.createAction)
+	router.AddRoute(createRoute)
 
-	catalogDeleteRoute := newRoute("/file/:id", "DELETE", s.deleteAction)
-	router.AddRoute(catalogDeleteRoute)
+	viewRoute := newRoute("/file/:id", "GET", s.viewAction)
+	router.AddRoute(viewRoute)
+
+	deleteRoute := newRoute("/file/:id", "DELETE", s.deleteAction)
+	router.AddRoute(deleteRoute)
 }
 
 // Teardown 销毁
 func (s *Share) Teardown() {
 	if s.centerAgent != nil {
+		s.centerAgent.UnstrictCatalog()
+
 		s.centerAgent.Stop()
 	}
 }
 
-func (s *Share) getShareView() (model.SummaryView, bool) {
-	for _, v := range s.shareContent {
+func (s *Share) getShareView(shareContent []model.SummaryView) (model.SummaryView, bool) {
+	for _, v := range shareContent {
 		if v.Name == "shareCatalog" && v.Type == model.CATALOG {
+			return v, true
+		}
+	}
+
+	return model.SummaryView{}, false
+}
+
+func (s *Share) getPrivacyView(shareContent []model.SummaryView) (model.SummaryView, bool) {
+	for _, v := range shareContent {
+		if v.Name == "privacyCatalog" && v.Type == model.CATALOG {
 			return v, true
 		}
 	}
@@ -125,11 +155,12 @@ func (s *Share) mainPage(res http.ResponseWriter, req *http.Request) {
 	log.Print("mainPage")
 
 	result := common_def.QuerySummaryListResult{}
-	shareView, ok := s.getShareView()
-	if ok {
-		result.Summary = s.centerAgent.QuerySummaryContent(shareView.ID, model.CATALOG, s.authToken, s.sessionID)
-		result.ErrorCode = common_def.Success
-	}
+	result.Summary = s.centerAgent.QuerySummaryContent(s.shareView.ID, model.CATALOG, s.authToken, s.sessionID)
+
+	summaryList := s.centerAgent.QuerySummaryContent(s.privacyView.ID, model.CATALOG, s.authToken, s.sessionID)
+	result.Summary = append(result.Summary, summaryList...)
+
+	result.ErrorCode = common_def.Success
 
 	block, err := json.Marshal(result)
 	if err == nil {
