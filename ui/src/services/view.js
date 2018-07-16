@@ -1,7 +1,7 @@
 import { request, config } from 'utils'
 
-const { api } = config
-const { queryFileUrl, fileRegistryUrl } = api
+const { api, fileRegistry } = config
+const { queryFileUrl } = api
 
 export async function queryFile(params) {
   return request({
@@ -13,7 +13,7 @@ export async function queryFile(params) {
 
 export async function downloadFile(params) {
   return request({
-    url: fileRegistryUrl,
+    url: fileRegistry,
     method: 'get',
     data: params,
   })

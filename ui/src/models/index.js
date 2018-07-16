@@ -34,18 +34,18 @@ export default {
 
       const result = yield call(queryAllFile, { catalog: id })
       const { data } = result
-      const { media } = data
-      yield put({ type: 'save', payload: { summaryList: media } })
+      const { summary } = data
+      yield put({ type: 'save', payload: { summaryList: summary } })
     },
 
     *queryAllFile({ payload }, { call, put, select }) {
       const { onlineUser, sessionID, authToken } = yield select(_ => _.app)
       const result = yield call(queryAllFile, { ...payload })
       const { data } = result
-      const { media } = data
+      const { summary } = data
       const param = qs.stringify({ sessionID, authToken, 'key-name': 'file' })
       const serverUrl = `${fileRegistry}?${param}`
-      yield put({ type: 'save', payload: { summaryList: media, serverUrl, readOnly: !onlineUser, addNewFlag: false } })
+      yield put({ type: 'save', payload: { summaryList: summary, serverUrl, readOnly: !onlineUser, addNewFlag: false } })
     },
 
     *deleteFile({ payload }, { call, put, select }) {
