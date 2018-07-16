@@ -9,12 +9,18 @@ import (
 	common_const "muidea.com/magicCommon/common"
 	common_def "muidea.com/magicCommon/def"
 	"muidea.com/magicCommon/foundation/net"
+	"muidea.com/magicCommon/model"
 )
 
 func (s *Share) createAction(res http.ResponseWriter, req *http.Request) {
 	log.Print("createAction")
 
-	param := &common_def.BatchCreateMediaParam{}
+	type createParam struct {
+		common_def.BatchCreateMediaParam
+		Privacy model.Unit `json:"privacy"`
+	}
+
+	param := &createParam{}
 	result := common_def.BatchCreateMediaResult{}
 	for {
 		authToken := req.URL.Query().Get(common_const.AuthToken)
@@ -32,6 +38,10 @@ func (s *Share) createAction(res http.ResponseWriter, req *http.Request) {
 			result.ErrorCode = common_def.Failed
 			result.Reason = "非法请求"
 			break
+		}
+
+		if param.Privacy.ID == 0 {
+			param.Catalog = append(param.Catalog, model.Catalog{ID: s.shareView.ID, Name: s.shareView.Name})
 		}
 
 		medias, ok := s.centerAgent.BatchCreateMedia(param.Medias, param.Description, param.Catalog, param.Expiration, authToken, sessionID)

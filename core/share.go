@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 
 	"muidea.com/magicCommon/agent"
 	common_const "muidea.com/magicCommon/common"
@@ -155,12 +156,30 @@ func (s *Share) mainPage(res http.ResponseWriter, req *http.Request) {
 	log.Print("mainPage")
 
 	result := common_def.QuerySummaryListResult{}
-	result.Summary = s.centerAgent.QuerySummaryContent(s.shareView.ID, model.CATALOG, s.authToken, s.sessionID)
+	catalog := req.URL.Query().Get("catalog")
+	for {
+		if len(catalog) == 0 {
+			result.Summary = s.centerAgent.QuerySummaryContent(s.shareView.ID, model.CATALOG, s.authToken, s.sessionID)
 
-	summaryList := s.centerAgent.QuerySummaryContent(s.privacyView.ID, model.CATALOG, s.authToken, s.sessionID)
-	result.Summary = append(result.Summary, summaryList...)
+			summaryList := s.centerAgent.QuerySummaryContent(s.privacyView.ID, model.CATALOG, s.authToken, s.sessionID)
+			result.Summary = append(result.Summary, summaryList...)
+		} else {
+			cid, err := strconv.Atoi(catalog)
+			if err != nil {
+				result.ErrorCode = common_def.IllegalParam
+				result.Reason = "无效参数"
+				break
+			}
 
-	result.ErrorCode = common_def.Success
+			result.Summary = s.centerAgent.QuerySummaryContentByCatalog(s.shareView.ID, model.CATALOG, cid, s.authToken, s.sessionID)
+
+			summaryList := s.centerAgent.QuerySummaryContentByCatalog(s.privacyView.ID, model.CATALOG, cid, s.authToken, s.sessionID)
+			result.Summary = append(result.Summary, summaryList...)
+		}
+
+		result.ErrorCode = common_def.Success
+		break
+	}
 
 	block, err := json.Marshal(result)
 	if err == nil {

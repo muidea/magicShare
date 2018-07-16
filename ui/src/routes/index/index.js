@@ -33,7 +33,12 @@ function IndexPage({ index, dispatch }) {
 
   const TitleText = ({ item }) => (
     <div>
-      <Link to={`/view/${item.id}`}><h1>{item.name}</h1></Link>
+      {
+      (item.type === 'media') && <Link to={`/view/${item.id}`}><h1>{item.name}</h1></Link>
+      }
+      {
+      (item.type === 'catalog') && <a onClick={() => onSelect(item)}><h1>{item.name}</h1></a>
+      }
     </div>
   )
 
