@@ -9,30 +9,18 @@ import (
 	common_const "muidea.com/magicCommon/common"
 	common_def "muidea.com/magicCommon/def"
 	"muidea.com/magicCommon/foundation/net"
-	"muidea.com/magicCommon/model"
 )
 
 func (s *Share) uploadAction(res http.ResponseWriter, req *http.Request) {
 	log.Print("uploadAction")
 
-	type catalogParam struct {
-		Name        string          `json:"name"`
-		Description string          `json:"description"`
-		Catalog     []model.Catalog `json:"catalog"`
-	}
-
-	type catalogResult struct {
-		common_def.Result
-		Catalog model.SummaryView `json:"catalog"`
-	}
-
-	param := &catalogParam{}
-	result := catalogResult{}
+	param := &common_def.BatchCreateMediaParam{}
+	result := common_def.BatchCreateMediaResult{}
 	for {
-		authToken := req.URL.Query().Get(common_const.AuthTokenID)
+		authToken := req.URL.Query().Get(common_const.AuthToken)
 		sessionID := req.URL.Query().Get(common_const.SessionID)
 		if len(authToken) == 0 || len(sessionID) == 0 {
-			log.Print("uploadAction, create catalog failed, illegal authToken or sessionID")
+			log.Print("uploadAction, create medias failed, illegal authToken or sessionID")
 			result.ErrorCode = common_def.Failed
 			result.Reason = "无效Token或会话"
 			break
@@ -46,16 +34,16 @@ func (s *Share) uploadAction(res http.ResponseWriter, req *http.Request) {
 			break
 		}
 
-		catalog, ok := s.centerAgent.CreateCatalog(param.Name, param.Description, param.Catalog, authToken, sessionID)
+		medias, ok := s.centerAgent.BatchCreateMedia(param.Medias, param.Description, param.Catalog, param.Expiration, authToken, sessionID)
 		if !ok {
-			log.Print("uploadAction, create catalog failed")
+			log.Print("uploadAction, create medias failed")
 			result.ErrorCode = common_def.Failed
-			result.Reason = "新建分类失败"
+			result.Reason = "新建文件记录失败"
 			break
 		}
 
 		result.ErrorCode = common_def.Success
-		result.Catalog = catalog
+		result.Medias = medias
 		break
 	}
 
@@ -71,17 +59,12 @@ func (s *Share) uploadAction(res http.ResponseWriter, req *http.Request) {
 func (s *Share) viewAction(res http.ResponseWriter, req *http.Request) {
 	log.Print("viewAction")
 
-	type catalogResult struct {
-		common_def.Result
-		Content model.CatalogDetailView `json:"content"`
-	}
-
-	result := catalogResult{}
+	result := common_def.QueryMediaResult{}
 	for {
-		authToken := req.URL.Query().Get(common_const.AuthTokenID)
+		authToken := req.URL.Query().Get(common_const.AuthToken)
 		sessionID := req.URL.Query().Get(common_const.SessionID)
 		if len(authToken) == 0 || len(sessionID) == 0 {
-			log.Print("viewAction, query catalog failed, illegal authToken or sessionID")
+			log.Print("viewAction, query media failed, illegal authToken or sessionID")
 			result.ErrorCode = common_def.Failed
 			result.Reason = "无效Token或会话"
 			break
@@ -89,21 +72,21 @@ func (s *Share) viewAction(res http.ResponseWriter, req *http.Request) {
 		_, value := net.SplitRESTAPI(req.URL.Path)
 		id, err := strconv.Atoi(value)
 		if err != nil {
-			log.Printf("viewAction, query catalog failed, illegal id, id:%s, err:%s", value, err.Error())
+			log.Printf("viewAction, query media failed, illegal id, id:%s, err:%s", value, err.Error())
 			result.ErrorCode = common_def.Failed
 			result.Reason = "非法参数"
 			break
 		}
 
-		catalog, ok := s.centerAgent.QueryCatalog(id, authToken, sessionID)
+		media, ok := s.centerAgent.QueryMedia(id, authToken, sessionID)
 		if !ok {
-			log.Print("viewAction, query catalog failed, illegal id or no exist")
+			log.Print("viewAction, query media failed, illegal id or no exist")
 			result.ErrorCode = common_def.NoExist
 			result.Reason = "对象不存在"
 			break
 		}
 
-		result.Content = catalog
+		result.Media = media
 		result.ErrorCode = common_def.Success
 		break
 	}
@@ -120,16 +103,12 @@ func (s *Share) viewAction(res http.ResponseWriter, req *http.Request) {
 func (s *Share) deleteAction(res http.ResponseWriter, req *http.Request) {
 	log.Print("deleteAction")
 
-	type catalogResult struct {
-		common_def.Result
-	}
-
-	result := catalogResult{}
+	result := common_def.DestroyMediaResult{}
 	for {
-		authToken := req.URL.Query().Get(common_const.AuthTokenID)
+		authToken := req.URL.Query().Get(common_const.AuthToken)
 		sessionID := req.URL.Query().Get(common_const.SessionID)
 		if len(authToken) == 0 || len(sessionID) == 0 {
-			log.Print("deleteAction, delete catalog failed, illegal authToken or sessionID")
+			log.Print("deleteAction, delete media failed, illegal authToken or sessionID")
 			result.ErrorCode = common_def.Failed
 			result.Reason = "无效Token或会话"
 			break
@@ -144,9 +123,9 @@ func (s *Share) deleteAction(res http.ResponseWriter, req *http.Request) {
 			break
 		}
 
-		ok := s.centerAgent.DeleteCatalog(id, authToken, sessionID)
+		ok := s.centerAgent.DeleteMedia(id, authToken, sessionID)
 		if !ok {
-			log.Printf("deleteAction, delete catalog failed, id=%d", id)
+			log.Printf("deleteAction, delete media failed, id=%d", id)
 			result.ErrorCode = common_def.Failed
 			result.Reason = "删除对象失败"
 			break

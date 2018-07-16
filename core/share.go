@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"muidea.com/magicCommon/agent"
+	common_const "muidea.com/magicCommon/common"
 	common_def "muidea.com/magicCommon/def"
 	"muidea.com/magicCommon/model"
 	engine "muidea.com/magicEngine"
@@ -44,7 +45,8 @@ func New(centerServer, name, endpointID, authToken string) (Share, bool) {
 	}
 	shareCatalog, ok := agent.FetchSummary(name, model.CATALOG, authToken, sessionID)
 	if !ok {
-		_, ok = agent.CreateCatalog(name, "MagicShare auto create catalog.", []model.Catalog{}, authToken, sessionID)
+		catalog := model.Catalog{ID: common_const.BuildinContentCatalog.ID, Name: common_const.BuildinContentCatalog.Name}
+		_, ok = agent.CreateCatalog(name, "MagicShare auto create catalog.", []model.Catalog{catalog}, authToken, sessionID)
 		if !ok {
 			log.Print("create share root catalog failed.")
 			return share, false
@@ -109,72 +111,24 @@ func (s *Share) Teardown() {
 	}
 }
 
-func (s *Share) getIndexView() (model.SummaryView, bool) {
+func (s *Share) getShareView() (model.SummaryView, bool) {
 	for _, v := range s.shareContent {
-		if v.Name == "Index" && v.Type == model.CATALOG {
+		if v.Name == "shareCatalog" && v.Type == model.CATALOG {
 			return v, true
 		}
 	}
 
 	return model.SummaryView{}, false
-}
-
-func (s *Share) getCatalogView() (model.SummaryView, bool) {
-	for _, v := range s.shareContent {
-		if v.Name == "Catalog" && v.Type == model.CATALOG {
-			return v, true
-		}
-	}
-
-	return model.SummaryView{}, false
-}
-
-func (s *Share) getAboutView() (model.SummaryView, bool) {
-	for _, v := range s.shareContent {
-		if v.Name == "About" && v.Type == model.ARTICLE {
-			return v, true
-		}
-	}
-
-	return model.SummaryView{}, false
-}
-
-func (s *Share) getContactView() (model.SummaryView, bool) {
-	for _, v := range s.shareContent {
-		if v.Name == "Contact" && v.Type == model.ARTICLE {
-			return v, true
-		}
-	}
-
-	return model.SummaryView{}, false
-}
-
-func (s *Share) get404View() (model.SummaryView, bool) {
-	for _, v := range s.shareContent {
-		if v.Name == "404" && v.Type == model.ARTICLE {
-			return v, true
-		}
-	}
-
-	return model.SummaryView{}, false
-}
-
-type summaryViewResult struct {
-	common_def.Result
-	SummaryList []model.SummaryView `json:"summaryList"`
 }
 
 func (s *Share) mainPage(res http.ResponseWriter, req *http.Request) {
 	log.Print("mainPage")
 
-	result := summaryViewResult{}
-	indexView, ok := s.getIndexView()
+	result := common_def.QuerySummaryListResult{}
+	shareView, ok := s.getShareView()
 	if ok {
-		result.SummaryList = s.centerAgent.QuerySummaryContent(indexView.ID, model.CATALOG, s.authToken, s.sessionID)
+		result.Summary = s.centerAgent.QuerySummaryContent(shareView.ID, model.CATALOG, s.authToken, s.sessionID)
 		result.ErrorCode = common_def.Success
-	} else {
-		result.ErrorCode = common_def.Redirect
-		result.Reason = "/default/index.html"
 	}
 
 	block, err := json.Marshal(result)
