@@ -13,12 +13,8 @@ const formItemLayout = {
   wrapperCol: { span: 16 },
 }
 
-const protectedItems = [
-  { id: 0, name: '共享' },
-  { id: 1, name: '私有' },
-]
-
 const MediaPanel = ({
+  privacyPolicy,
   serverUrl,
   onSubmit,
   onCancel,
@@ -78,7 +74,7 @@ const MediaPanel = ({
                 rules: [{
                   required: true, message: '确认是否共享该文件',
                 }],
-              })(<RadioItemGroup dataSource={protectedItems} />)}
+              })(<RadioItemGroup dataSource={privacyPolicy} />)}
             </FormItem>
           </Col>
         </Row>
@@ -98,6 +94,7 @@ const MediaPanel = ({
 }
 
 MediaPanel.propTypes = {
+  privacyPolicy: PropTypes.array,
   form: PropTypes.object,
   onSubmit: PropTypes.func,
   onCancel: PropTypes.func,

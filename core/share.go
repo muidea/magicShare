@@ -155,27 +155,68 @@ func (s *Share) getPrivacyView(shareContent []model.SummaryView) (model.SummaryV
 func (s *Share) mainPage(res http.ResponseWriter, req *http.Request) {
 	log.Print("mainPage")
 
-	result := common_def.QuerySummaryListResult{}
+	type mainResult struct {
+		common_def.QuerySummaryListResult
+		PrivacyPolicy []model.Catalog `json:"privacyPolicy"`
+	}
+
+	result := mainResult{}
+	authToken := req.URL.Query().Get(common_const.AuthToken)
+	sessionID := req.URL.Query().Get(common_const.SessionID)
+	onlineUser, _, isLogin := s.centerAgent.StatusAccount(authToken, sessionID)
 	catalog := req.URL.Query().Get("catalog")
 	for {
-		if len(catalog) == 0 {
-			result.Summary = s.centerAgent.QuerySummaryContent(s.shareView.ID, model.CATALOG, s.authToken, s.sessionID)
-
-			summaryList := s.centerAgent.QuerySummaryContent(s.privacyView.ID, model.CATALOG, s.authToken, s.sessionID)
-			result.Summary = append(result.Summary, summaryList...)
-		} else {
-			cid, err := strconv.Atoi(catalog)
+		cid := -1
+		if len(catalog) > 0 {
+			id, err := strconv.Atoi(catalog)
 			if err != nil {
 				result.ErrorCode = common_def.IllegalParam
 				result.Reason = "无效参数"
 				break
 			}
 
-			result.Summary = s.centerAgent.QuerySummaryContentByCatalog(s.shareView.ID, model.CATALOG, cid, s.authToken, s.sessionID)
-
-			summaryList := s.centerAgent.QuerySummaryContentByCatalog(s.privacyView.ID, model.CATALOG, cid, s.authToken, s.sessionID)
-			result.Summary = append(result.Summary, summaryList...)
+			cid = id
 		}
+
+		shareList := []model.SummaryView{}
+		privacyList := []model.SummaryView{}
+
+		shareList = s.flatSummaryContent(s.shareView.ID, model.CATALOG, -1)
+		if isLogin {
+			privacyList = s.flatSummaryContent(s.privacyView.ID, model.CATALOG, onlineUser.ID)
+		}
+
+		if cid >= 0 {
+			for _, val := range shareList {
+				if existCatalogArray(cid, val.Catalog) {
+					if !existSummaryArray(val.ID, result.Summary) {
+						result.Summary = append(result.Summary, val)
+					}
+				}
+			}
+			for _, val := range privacyList {
+				if existCatalogArray(cid, val.Catalog) {
+					if !existSummaryArray(val.ID, result.Summary) {
+						result.Summary = append(result.Summary, val)
+					}
+				}
+			}
+		} else {
+			for _, val := range shareList {
+				if !existSummaryArray(val.ID, result.Summary) {
+					result.Summary = append(result.Summary, val)
+				}
+			}
+
+			for _, val := range privacyList {
+				if !existSummaryArray(val.ID, result.Summary) {
+					result.Summary = append(result.Summary, val)
+				}
+			}
+		}
+
+		result.PrivacyPolicy = append(result.PrivacyPolicy, model.Catalog{ID: s.shareView.ID, Name: s.shareView.Description})
+		result.PrivacyPolicy = append(result.PrivacyPolicy, model.Catalog{ID: s.privacyView.ID, Name: s.privacyView.Description})
 
 		result.ErrorCode = common_def.Success
 		break
@@ -188,4 +229,59 @@ func (s *Share) mainPage(res http.ResponseWriter, req *http.Request) {
 	}
 
 	log.Print("mainPage, json.Marshal, failed, err:" + err.Error())
+}
+
+func (s *Share) flatSummaryContent(id int, summaryType string, user int) []model.SummaryView {
+	retList := []model.SummaryView{}
+	summaryList := []model.SummaryView{}
+	subList := []model.SummaryView{}
+
+	if user == -1 {
+		summaryList = s.centerAgent.QuerySummaryContent(id, summaryType, s.authToken, s.sessionID)
+	} else {
+		summaryList = s.centerAgent.QuerySummaryContentByUser(id, summaryType, s.authToken, s.sessionID, user)
+	}
+	for _, val := range summaryList {
+		if val.Type == summaryType {
+			if user == -1 {
+				subList = s.centerAgent.QuerySummaryContent(val.ID, summaryType, s.authToken, s.sessionID)
+			} else {
+				subList = s.centerAgent.QuerySummaryContentByUser(val.ID, summaryType, s.authToken, s.sessionID, user)
+			}
+
+			for _, subVal := range subList {
+				if !existSummaryArray(subVal.ID, retList) {
+					retList = append(retList, subVal)
+				}
+			}
+
+			continue
+		}
+
+		if !existSummaryArray(val.ID, retList) {
+			retList = append(retList, val)
+		}
+	}
+
+	return retList
+}
+
+func existCatalogArray(id int, catalogs []model.Catalog) bool {
+	for _, val := range catalogs {
+		if val.ID == id {
+			return true
+		}
+	}
+
+	return false
+}
+
+func existSummaryArray(id int, summarys []model.SummaryView) bool {
+	for _, val := range summarys {
+		if val.ID == id {
+			return true
+		}
+	}
+
+	return false
 }

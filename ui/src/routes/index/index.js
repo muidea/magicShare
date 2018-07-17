@@ -8,7 +8,7 @@ import MediaPanel from './mediaPanel'
 import styles from './index.less'
 
 function IndexPage({ index, dispatch }) {
-  const { summaryList, serverUrl, readOnly, addNewFlag } = index
+  const { summaryList, privacyPolicy, serverUrl, readOnly, addNewFlag } = index
 
   const onSelect = (tag) => {
     dispatch({ type: 'index/viewCatalog', payload: { ...tag } })
@@ -69,7 +69,7 @@ function IndexPage({ index, dispatch }) {
       }
       {
         !readOnly && addNewFlag &&
-        <MediaPanel serverUrl={serverUrl} onSubmit={onSubmit} onCancel={onCancel} />
+        <MediaPanel serverUrl={serverUrl} privacyPolicy={privacyPolicy} onSubmit={onSubmit} onCancel={onCancel} />
       }
     </div>
   )

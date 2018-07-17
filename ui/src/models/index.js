@@ -10,6 +10,7 @@ export default {
 
   state: {
     summaryList: [],
+    privacyPolicy: [],
     serverUrl: '',
     readOnly: true,
     addNewFlag: false,
@@ -29,23 +30,24 @@ export default {
   },
 
   effects: {
-    *viewCatalog({ payload }, { call, put }) {
+    *viewCatalog({ payload }, { call, put, select }) {
       const { id } = payload
+      const { sessionID, authToken } = yield select(_ => _.app)
 
-      const result = yield call(queryAllFile, { catalog: id })
+      const result = yield call(queryAllFile, { catalog: id, sessionID, authToken })
       const { data } = result
-      const { summary } = data
-      yield put({ type: 'save', payload: { summaryList: summary } })
+      const { summary, privacyPolicy } = data
+      yield put({ type: 'save', payload: { summaryList: summary, privacyPolicy } })
     },
 
     *queryAllFile({ payload }, { call, put, select }) {
       const { onlineUser, sessionID, authToken } = yield select(_ => _.app)
-      const result = yield call(queryAllFile, { ...payload })
+      const result = yield call(queryAllFile, { ...payload, sessionID, authToken })
       const { data } = result
-      const { summary } = data
+      const { summary, privacyPolicy } = data
       const param = qs.stringify({ sessionID, authToken, 'key-name': 'file' })
       const serverUrl = `${fileRegistry}?${param}`
-      yield put({ type: 'save', payload: { summaryList: summary, serverUrl, readOnly: !onlineUser, addNewFlag: false } })
+      yield put({ type: 'save', payload: { summaryList: summary, privacyPolicy, serverUrl, readOnly: !onlineUser, addNewFlag: false } })
     },
 
     *deleteFile({ payload }, { call, put, select }) {
