@@ -1,14 +1,14 @@
 FROM nginx
 
 LABEL Author="rangh"
-LABEL Application="magicShare"
+LABEL Application="magicShareUI"
 
 
 RUN mkdir -p /etc/nginx/logs
 
-COPY magicShare /tmp/
+COPY magicShareUI /tmp/
 RUN cd /tmp \
- && tar -xvf magicShare -C /usr/share/nginx/html/ \
- && rm -f magicShare
+ && tar -xvf magicShareUI -C /usr/share/nginx/html/ \
+ && rm -f magicShareUI
 
 ADD nginx.conf /etc/nginx/nginx.conf
