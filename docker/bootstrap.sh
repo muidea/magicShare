@@ -10,7 +10,7 @@ if [ $CENTER_SERVER ]; then
 fi
 
 if [ $NAME ]; then
-    EXTRA_ARGS=$EXTRA_ARGS' -BlogName='$NAME
+    EXTRA_ARGS=$EXTRA_ARGS' -ShareName='$NAME
 fi
 
 if [ $ENDPOINTID ]; then
@@ -25,4 +25,4 @@ echo $EXTRA_ARGS
 
 /var/app/wait-for-it.sh $CENTER_SERVER -- echo "centerServer is ready."
 
-/var/app/magicBlog $EXTRA_ARGS "$@"
+/var/app/magicShare $EXTRA_ARGS "$@"

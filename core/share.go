@@ -160,7 +160,7 @@ func (s *Share) mainPage(res http.ResponseWriter, req *http.Request) {
 		PrivacyPolicy []model.Catalog `json:"privacyPolicy"`
 	}
 
-	result := mainResult{}
+	result := mainResult{QuerySummaryListResult: common_def.QuerySummaryListResult{Summary: []model.SummaryView{}}}
 	authToken := req.URL.Query().Get(common_const.AuthToken)
 	sessionID := req.URL.Query().Get(common_const.SessionID)
 	onlineUser, _, isLogin := s.centerAgent.StatusAccount(authToken, sessionID)

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 rootPath=$GOPATH
-projectName=magicBlog
+projectName=magicShare
 projectPath=$rootPath/src/muidea.com/$projectName
 binPath=$rootPath/bin/$projectName
 imageID=""
@@ -28,7 +28,7 @@ function cleanUp()
 function buildBin()
 {
     echo "buildBin..."
-    go install muidea.com/magicBlog/cmd/magicBlog
+    go install muidea.com/magicShare/cmd/magicShare
     if [ $? -ne 0 ]; then
         echo "buildBin failed."
         exit 1
@@ -106,7 +106,7 @@ function rmiImage()
 
 function all()
 {
-    echo "build magicBlog docker image"
+    echo "build magicShare docker image"
 
     curPath=$(pwd)
 

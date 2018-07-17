@@ -40,7 +40,7 @@ func (s *Share) createAction(res http.ResponseWriter, req *http.Request) {
 			break
 		}
 
-		if param.Privacy.ID == 0 {
+		if param.Privacy.ID == s.shareView.ID {
 			param.Catalog = append(param.Catalog, model.Catalog{ID: s.shareView.ID, Name: s.shareView.Name})
 		}
 
