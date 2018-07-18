@@ -47,19 +47,21 @@ export default {
     },
 
     *queryFile({ payload }, { call, put, select }) {
-      const { sessionID, authToken } = yield select(_ => _.app)
+      let { sessionID, authToken } = yield select(_ => _.app)
 
       const queryResult = yield call(queryFile, { ...payload, sessionID, authToken })
       const { data } = queryResult
       const { errorCode, media } = data
+
+      sessionID = data.sessionID
+      authToken = data.authToken
       if (errorCode === 0) {
         const { name, description, catalog, createDate, creater, fileToken, expiration } = media
         const downloadResult = yield call(downloadFile, { fileToken, sessionID, authToken })
         const { data } = downloadResult
         const { errorCode, redirectUrl } = data
-        const param = qs.stringify({ sessionID, authToken })
         if (errorCode === 0) {
-          yield put({ type: 'save', payload: { name, description, catalog, createDate, creater, expiration, fileUrl: `${redirectUrl}?${param}` } })
+          yield put({ type: 'save', payload: { name, description, catalog, createDate, creater, expiration, fileUrl: redirectUrl } })
         }
       }
     },

@@ -9,6 +9,7 @@ import (
 	"muidea.com/magicCommon/agent"
 	common_const "muidea.com/magicCommon/common"
 	common_def "muidea.com/magicCommon/def"
+	"muidea.com/magicCommon/foundation/net"
 	"muidea.com/magicCommon/model"
 	engine "muidea.com/magicEngine"
 )
@@ -113,11 +114,11 @@ func (s *Share) Startup(router engine.Router) {
 	mainRoute := newRoute("/file/", "GET", s.mainPage)
 	router.AddRoute(mainRoute)
 
+	viewRoute := newRoute("/file/:id", "GET", s.viewPage)
+	router.AddRoute(viewRoute)
+
 	createRoute := newRoute("/file/", "POST", s.createAction)
 	router.AddRoute(createRoute)
-
-	viewRoute := newRoute("/file/:id", "GET", s.viewAction)
-	router.AddRoute(viewRoute)
 
 	deleteRoute := newRoute("/file/:id", "DELETE", s.deleteAction)
 	router.AddRoute(deleteRoute)
@@ -229,6 +230,50 @@ func (s *Share) mainPage(res http.ResponseWriter, req *http.Request) {
 	}
 
 	log.Print("mainPage, json.Marshal, failed, err:" + err.Error())
+}
+
+func (s *Share) viewPage(res http.ResponseWriter, req *http.Request) {
+	log.Print("viewPage")
+
+	type viewResult struct {
+		common_def.QueryMediaResult
+		AuthToken string `json:"authToken"`
+		SessionID string `json:"sessionID"`
+	}
+
+	result := viewResult{}
+	for {
+		_, value := net.SplitRESTAPI(req.URL.Path)
+		id, err := strconv.Atoi(value)
+		if err != nil {
+			log.Printf("viewPage, query media failed, illegal id, id:%s, err:%s", value, err.Error())
+			result.ErrorCode = common_def.Failed
+			result.Reason = "非法参数"
+			break
+		}
+
+		media, ok := s.centerAgent.QueryMedia(id, s.authToken, s.sessionID)
+		if !ok {
+			log.Print("viewPage, query media failed, illegal id or no exist")
+			result.ErrorCode = common_def.NoExist
+			result.Reason = "对象不存在"
+			break
+		}
+
+		result.Media = media
+		result.AuthToken = s.authToken
+		result.SessionID = s.sessionID
+		result.ErrorCode = common_def.Success
+		break
+	}
+
+	block, err := json.Marshal(result)
+	if err == nil {
+		res.Write(block)
+		return
+	}
+
+	log.Print("viewPage, json.Marshal, failed, err:" + err.Error())
 }
 
 func (s *Share) flatSummaryContent(id int, summaryType string, user int) []model.SummaryView {

@@ -19,9 +19,10 @@ func (s *Share) createAction(res http.ResponseWriter, req *http.Request) {
 		common_def.BatchCreateMediaParam
 		Privacy model.Unit `json:"privacy"`
 	}
+	type createResult common_def.BatchCreateMediaResult
 
 	param := &createParam{}
-	result := common_def.BatchCreateMediaResult{}
+	result := createResult{}
 	for {
 		authToken := req.URL.Query().Get(common_const.AuthToken)
 		sessionID := req.URL.Query().Get(common_const.SessionID)
@@ -31,7 +32,6 @@ func (s *Share) createAction(res http.ResponseWriter, req *http.Request) {
 			result.Reason = "无效Token或会话"
 			break
 		}
-
 		err := net.ParsePostJSON(req, param)
 		if err != nil {
 			log.Printf("createAction, ParsePostJSON failed, err:%s", err.Error())
@@ -42,6 +42,13 @@ func (s *Share) createAction(res http.ResponseWriter, req *http.Request) {
 
 		if param.Privacy.ID == s.shareView.ID {
 			param.Catalog = append(param.Catalog, model.Catalog{ID: s.shareView.ID, Name: s.shareView.Name})
+		} else if param.Privacy.ID == s.privacyView.ID {
+			param.Catalog = append(param.Catalog, model.Catalog{ID: s.privacyView.ID, Name: s.privacyView.Name})
+		} else {
+			log.Printf("createAction, illegalPrivacy, id:%d", param.Privacy.ID)
+			result.ErrorCode = common_def.IllegalParam
+			result.Reason = "非法请求"
+			break
 		}
 
 		medias, ok := s.centerAgent.BatchCreateMedia(param.Medias, param.Description, param.Catalog, param.Expiration, authToken, sessionID)
@@ -54,50 +61,6 @@ func (s *Share) createAction(res http.ResponseWriter, req *http.Request) {
 
 		result.ErrorCode = common_def.Success
 		result.Medias = medias
-		break
-	}
-
-	block, err := json.Marshal(result)
-	if err == nil {
-		res.Write(block)
-		return
-	}
-
-	res.WriteHeader(http.StatusExpectationFailed)
-}
-
-func (s *Share) viewAction(res http.ResponseWriter, req *http.Request) {
-	log.Print("viewAction")
-
-	result := common_def.QueryMediaResult{}
-	for {
-		authToken := req.URL.Query().Get(common_const.AuthToken)
-		sessionID := req.URL.Query().Get(common_const.SessionID)
-		if len(authToken) == 0 || len(sessionID) == 0 {
-			log.Print("viewAction, query media failed, illegal authToken or sessionID")
-			result.ErrorCode = common_def.Failed
-			result.Reason = "无效Token或会话"
-			break
-		}
-		_, value := net.SplitRESTAPI(req.URL.Path)
-		id, err := strconv.Atoi(value)
-		if err != nil {
-			log.Printf("viewAction, query media failed, illegal id, id:%s, err:%s", value, err.Error())
-			result.ErrorCode = common_def.Failed
-			result.Reason = "非法参数"
-			break
-		}
-
-		media, ok := s.centerAgent.QueryMedia(id, authToken, sessionID)
-		if !ok {
-			log.Print("viewAction, query media failed, illegal id or no exist")
-			result.ErrorCode = common_def.NoExist
-			result.Reason = "对象不存在"
-			break
-		}
-
-		result.Media = media
-		result.ErrorCode = common_def.Success
 		break
 	}
 
@@ -123,7 +86,6 @@ func (s *Share) deleteAction(res http.ResponseWriter, req *http.Request) {
 			result.Reason = "无效Token或会话"
 			break
 		}
-
 		_, value := net.SplitRESTAPI(req.URL.Path)
 		id, err := strconv.Atoi(value)
 		if err != nil {
