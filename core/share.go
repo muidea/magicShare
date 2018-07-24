@@ -41,7 +41,7 @@ func New(centerServer, name, endpointID, authToken string) (Share, bool) {
 	share := Share{}
 
 	agent := agent.New()
-	sessionID, ok := agent.Start(centerServer, endpointID, authToken)
+	authToken, sessionID, ok := agent.Start(centerServer, endpointID, authToken)
 	if !ok {
 		return share, false
 	}
