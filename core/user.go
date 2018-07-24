@@ -24,7 +24,7 @@ func (s *Share) statusAction(res http.ResponseWriter, req *http.Request) {
 			break
 		}
 
-		userView, sessionID, ok := s.centerAgent.StatusAccount(authToken, sessionID)
+		userView, authToken, sessionID, ok := s.centerAgent.StatusAccount(authToken, sessionID)
 		if !ok {
 			log.Printf("statusAccount failed, illegal authToken or sessionID, authToken:%s, sessionID:%s", authToken, sessionID)
 			result.ErrorCode = common_def.Failed
@@ -32,7 +32,8 @@ func (s *Share) statusAction(res http.ResponseWriter, req *http.Request) {
 			break
 		}
 
-		result.OnlineUser = userView
+		result.OnlineEntry = userView
+		result.AuthToken = authToken
 		result.SessionID = sessionID
 		result.ErrorCode = common_def.Success
 		break
@@ -69,7 +70,7 @@ func (s *Share) loginAction(res http.ResponseWriter, req *http.Request) {
 			break
 		}
 
-		result.OnlineUser = userView
+		result.OnlineEntry = userView
 		result.AuthToken = authToken
 		result.SessionID = sessionID
 		result.ErrorCode = common_def.Success

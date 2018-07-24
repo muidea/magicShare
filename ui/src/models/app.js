@@ -32,7 +32,7 @@ export default {
 
   effects: {
     *queryStatus({ payload }, { call, put, select }) {
-      const { authToken, sessionID } = yield select(_ => _.app)
+      let { authToken, sessionID } = yield select(_ => _.app)
       if (authToken) {
         payload = { ...payload, authToken }
       }
@@ -42,10 +42,13 @@ export default {
 
       const result = yield call(queryStatus, { ...payload })
       const { data } = result
-      const { errorCode, onlineUser } = data
+      const { errorCode, onlineEntry } = data
+
+      authToken = data.authToken
+      sessionID = data.sessionID
 
       if (errorCode === 0) {
-        yield put({ type: 'saveSession', payload: { isLogin: true, onlineUser } })
+        yield put({ type: 'saveSession', payload: { isLogin: true, authToken, sessionID, onlineUser: onlineEntry } })
       }
     },
 
@@ -53,9 +56,9 @@ export default {
       const result = yield call(loginUser, { ...payload })
       const { data } = result
 
-      const { errorCode, reason, onlineUser, authToken, sessionID } = data
+      const { errorCode, reason, onlineEntry, authToken, sessionID } = data
       if (errorCode === 0) {
-        yield put({ type: 'saveSession', payload: { isLogin: errorCode === 0, authToken, sessionID, onlineUser } })
+        yield put({ type: 'saveSession', payload: { isLogin: true, authToken, sessionID, onlineUser: onlineEntry } })
         yield put(routerRedux.push({
           pathname: '/',
         }))

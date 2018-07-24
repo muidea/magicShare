@@ -47,7 +47,7 @@ func New(centerServer, name, endpointID, authToken string) (Share, bool) {
 	}
 	shareCatalog, ok := agent.FetchSummary(name, model.CATALOG, authToken, sessionID)
 	if !ok {
-		catalog := model.Catalog{ID: common_const.BuildinContentCatalog.ID, Name: common_const.BuildinContentCatalog.Name}
+		catalog := model.Catalog{ID: common_const.SystemContentCatalog.ID, Name: common_const.SystemContentCatalog.Name}
 		_, ok = agent.CreateCatalog(name, "MagicShare auto create catalog.", []model.Catalog{catalog}, authToken, sessionID)
 		if !ok {
 			log.Print("create share root catalog failed.")
@@ -164,7 +164,7 @@ func (s *Share) mainPage(res http.ResponseWriter, req *http.Request) {
 	result := mainResult{QuerySummaryListResult: common_def.QuerySummaryListResult{Summary: []model.SummaryView{}}}
 	authToken := req.URL.Query().Get(common_const.AuthToken)
 	sessionID := req.URL.Query().Get(common_const.SessionID)
-	onlineUser, _, isLogin := s.centerAgent.StatusAccount(authToken, sessionID)
+	onlineEntry, _, _, isLogin := s.centerAgent.StatusAccount(authToken, sessionID)
 	catalog := req.URL.Query().Get("catalog")
 	for {
 		cid := -1
@@ -184,7 +184,7 @@ func (s *Share) mainPage(res http.ResponseWriter, req *http.Request) {
 
 		shareList = s.flatSummaryContent(s.shareView.ID, model.CATALOG, -1)
 		if isLogin {
-			privacyList = s.flatSummaryContent(s.privacyView.ID, model.CATALOG, onlineUser.ID)
+			privacyList = s.flatSummaryContent(s.privacyView.ID, model.CATALOG, onlineEntry.ID)
 		}
 
 		if cid >= 0 {
