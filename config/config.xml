@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<app name="magicShare">
+    <content>
+        <catalogs>
+            <catalog name="shareCatalog" description="共享文件"/>
+            <catalog name="privacyCatalog" description="私有文件"/>
+        </catalogs>
+    </content>
+</app>

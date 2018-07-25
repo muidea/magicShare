@@ -47,15 +47,6 @@ func New(centerServer, name, endpointID, authToken string) (Share, bool) {
 	}
 	shareCatalog, ok := agent.FetchSummary(name, model.CATALOG, authToken, sessionID)
 	if !ok {
-		catalog := model.Catalog{ID: common_const.SystemContentCatalog.ID, Name: common_const.SystemContentCatalog.Name}
-		_, ok = agent.CreateCatalog(name, "MagicShare auto create catalog.", []model.Catalog{catalog}, authToken, sessionID)
-		if !ok {
-			log.Print("create share root catalog failed.")
-			return share, false
-		}
-	}
-	shareCatalog, ok = agent.FetchSummary(name, model.CATALOG, authToken, sessionID)
-	if !ok {
 		log.Print("fetch share root ctalog failed.")
 		return share, false
 	}
