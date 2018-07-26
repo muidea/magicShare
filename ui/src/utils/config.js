@@ -1,7 +1,7 @@
 const APIV1 = '/api/v1'
 
 module.exports = {
-  name: 'MagicShare',
+  name: 'magicShare',
   prefix: 'magicShare',
   footerText: 'magicShare © 2017 muidea.com',
   staticPrefix: '/static/',

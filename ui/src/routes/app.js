@@ -4,7 +4,10 @@ import PropTypes from 'prop-types'
 import { connect } from 'dva'
 import { Helmet } from 'react-helmet'
 import { withRouter } from 'dva/router'
+import { config } from 'utils'
 import { MainLayout } from './common'
+
+const { name } = config
 
 const App = ({ children, app, history, dispatch }) => {
   const { onlineUser, authToken, sessionID } = app
@@ -18,7 +21,7 @@ const App = ({ children, app, history, dispatch }) => {
         <title>MagicShare</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Helmet>
-      <MainLayout history={history} user={onlineUser} logoutHandler={onLogoutHandler}>
+      <MainLayout history={history} declare={name} user={onlineUser} logoutHandler={onLogoutHandler}>
         { children }
       </MainLayout>
     </div>
