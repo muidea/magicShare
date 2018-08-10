@@ -47,7 +47,7 @@ func New(centerServer, name, endpointID, authToken string) (Share, bool) {
 	}
 	shareCatalog, ok := agent.FetchSummary(name, model.CATALOG, authToken, sessionID, nil)
 	if !ok {
-		log.Print("fetch share root ctalog failed.")
+		log.Printf("fetch share root ctalog failed. name:%s, type:%s", name, model.CATALOG)
 		return share, false
 	}
 
