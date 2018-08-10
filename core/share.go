@@ -45,13 +45,13 @@ func New(centerServer, name, endpointID, authToken string) (Share, bool) {
 	if !ok {
 		return share, false
 	}
-	shareCatalog, ok := agent.FetchSummary(name, model.CATALOG, authToken, sessionID)
+	shareCatalog, ok := agent.FetchSummary(name, model.CATALOG, authToken, sessionID, nil)
 	if !ok {
 		log.Print("fetch share root ctalog failed.")
 		return share, false
 	}
 
-	shareContent := agent.QuerySummaryContent(shareCatalog.ID, model.CATALOG, authToken, sessionID)
+	shareContent := agent.QuerySummaryContent(*shareCatalog.CatalogUnit(), authToken, sessionID)
 	shareView, ok := share.getShareView(shareContent)
 	if !ok {
 		log.Print("get ShareView failed.")
@@ -90,9 +90,6 @@ type Share struct {
 
 // Startup 启动
 func (s *Share) Startup(router engine.Router) {
-	catalog := &model.Catalog{ID: s.privacyView.ID, Name: s.privacyView.Name}
-	s.centerAgent.StrictCatalog(catalog)
-
 	statusRoute := newRoute("/user/status/", "GET", s.statusAction)
 	router.AddRoute(statusRoute)
 
@@ -118,8 +115,6 @@ func (s *Share) Startup(router engine.Router) {
 // Teardown 销毁
 func (s *Share) Teardown() {
 	if s.centerAgent != nil {
-		s.centerAgent.UnstrictCatalog()
-
 		s.centerAgent.Stop()
 	}
 }
@@ -272,17 +267,20 @@ func (s *Share) flatSummaryContent(id int, summaryType string, user int) []model
 	summaryList := []model.SummaryView{}
 	subList := []model.SummaryView{}
 
+	catalog := model.CatalogUnit{ID: id, Type: summaryType}
 	if user == -1 {
-		summaryList = s.centerAgent.QuerySummaryContent(id, summaryType, s.authToken, s.sessionID)
+		summaryList = s.centerAgent.QuerySummaryContent(catalog, s.authToken, s.sessionID)
 	} else {
-		summaryList = s.centerAgent.QuerySummaryContentByUser(id, summaryType, s.authToken, s.sessionID, user)
+		summaryList = s.centerAgent.QuerySummaryContentByUser(user, s.authToken, s.sessionID, &catalog)
 	}
+
 	for _, val := range summaryList {
 		if val.Type == summaryType {
+			subCatalog := model.CatalogUnit{ID: val.ID, Type: val.Type}
 			if user == -1 {
-				subList = s.centerAgent.QuerySummaryContent(val.ID, summaryType, s.authToken, s.sessionID)
+				subList = s.centerAgent.QuerySummaryContent(subCatalog, s.authToken, s.sessionID)
 			} else {
-				subList = s.centerAgent.QuerySummaryContentByUser(val.ID, summaryType, s.authToken, s.sessionID, user)
+				subList = s.centerAgent.QuerySummaryContentByUser(user, s.authToken, s.sessionID, &subCatalog)
 			}
 
 			for _, subVal := range subList {
@@ -302,7 +300,7 @@ func (s *Share) flatSummaryContent(id int, summaryType string, user int) []model
 	return retList
 }
 
-func existCatalogArray(id int, catalogs []model.Catalog) bool {
+func existCatalogArray(id int, catalogs []model.Summary) bool {
 	for _, val := range catalogs {
 		if val.ID == id {
 			return true

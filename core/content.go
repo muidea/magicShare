@@ -51,7 +51,7 @@ func (s *Share) createAction(res http.ResponseWriter, req *http.Request) {
 			break
 		}
 
-		medias, ok := s.centerAgent.BatchCreateMedia(param.Medias, param.Description, param.Catalog, param.Expiration, authToken, sessionID)
+		medias, ok := s.centerAgent.BatchCreateMedia(param.Medias, param.Description, param.Catalog, param.Expiration, authToken, sessionID, s.shareInfo.CatalogUnit())
 		if !ok {
 			log.Print("createAction, create medias failed")
 			result.ErrorCode = common_def.Failed
