@@ -41,9 +41,9 @@ func (s *Share) createAction(res http.ResponseWriter, req *http.Request) {
 		}
 
 		if param.Privacy.ID == s.shareView.ID {
-			param.Catalog = append(param.Catalog, model.Catalog{ID: s.shareView.ID, Name: s.shareView.Name})
+			param.Catalog = append(param.Catalog, *s.shareView.CatalogUnit())
 		} else if param.Privacy.ID == s.privacyView.ID {
-			param.Catalog = append(param.Catalog, model.Catalog{ID: s.privacyView.ID, Name: s.privacyView.Name})
+			param.Catalog = append(param.Catalog, *s.privacyView.CatalogUnit())
 		} else {
 			log.Printf("createAction, illegalPrivacy, id:%d", param.Privacy.ID)
 			result.ErrorCode = common_def.IllegalParam
@@ -51,7 +51,7 @@ func (s *Share) createAction(res http.ResponseWriter, req *http.Request) {
 			break
 		}
 
-		medias, ok := s.centerAgent.BatchCreateMedia(param.Medias, param.Description, param.Catalog, param.Expiration, authToken, sessionID, s.shareInfo.CatalogUnit())
+		medias, ok := s.centerAgent.BatchCreateMedia(param.Medias, param.Description, param.Catalog, param.Expiration, authToken, sessionID)
 		if !ok {
 			log.Print("createAction, create medias failed")
 			result.ErrorCode = common_def.Failed
