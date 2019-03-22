@@ -2,7 +2,7 @@
 
 rootPath=$GOPATH
 projectName=magicShareUI
-projectPath=$rootPath/src/muidea.com/magicShare/ui
+projectPath=$rootPath/src/github.com/muidea/magicShare/ui
 binPath=$projectPath/dist
 imageID=""
 imageNamespace=muidea.ai/develop

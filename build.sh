@@ -1,3 +1,3 @@
 #/bin/sh
 
-go build muidea.com/magicShare/cmd/magicShare
+go build github.com/muidea/magicShare/cmd/magicShare
