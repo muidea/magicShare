@@ -32,9 +32,9 @@ func (s *Share) createAction(res http.ResponseWriter, req *http.Request) {
 			result.Reason = "无效Token或会话"
 			break
 		}
-		err := net.ParsePostJSON(req, param)
+		err := net.ParseJSONBody(req, param)
 		if err != nil {
-			log.Printf("createAction, ParsePostJSON failed, err:%s", err.Error())
+			log.Printf("createAction, ParseJSONBody failed, err:%s", err.Error())
 			result.ErrorCode = common_def.Failed
 			result.Reason = "非法请求"
 			break
