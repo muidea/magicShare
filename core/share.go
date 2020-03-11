@@ -150,7 +150,7 @@ func (s *Share) mainPage(res http.ResponseWriter, req *http.Request) {
 	result := mainResult{QuerySummaryListResult: common_def.QuerySummaryListResult{Summary: []model.SummaryView{}}}
 	authToken := req.URL.Query().Get(common_const.AuthToken)
 	sessionID := req.URL.Query().Get(common_const.SessionID)
-	onlineEntry, _, _, isLogin := s.centerAgent.StatusAccount(authToken, sessionID)
+	onlineEntry, _, _, isLogin := s.centerAgent.VerifySession(authToken, sessionID)
 	catalog := req.URL.Query().Get("catalog")
 	for {
 		cid := -1

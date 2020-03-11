@@ -13,7 +13,7 @@ import (
 func (s *Share) statusAction(res http.ResponseWriter, req *http.Request) {
 	log.Print("statusAction")
 
-	result := common_def.StatusAccountResult{}
+	result := common_def.VerifySessionResult{}
 	for {
 		authToken := req.URL.Query().Get(common_const.AuthToken)
 		sessionID := req.URL.Query().Get(common_const.SessionID)
@@ -24,7 +24,7 @@ func (s *Share) statusAction(res http.ResponseWriter, req *http.Request) {
 			break
 		}
 
-		userView, authToken, sessionID, ok := s.centerAgent.StatusAccount(authToken, sessionID)
+		userView, authToken, sessionID, ok := s.centerAgent.VerifySession(authToken, sessionID)
 		if !ok {
 			log.Printf("statusAccount failed, illegal authToken or sessionID, authToken:%s, sessionID:%s", authToken, sessionID)
 			result.ErrorCode = common_def.Failed
